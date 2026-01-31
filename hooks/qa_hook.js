@@ -18,7 +18,6 @@
     }
 
     function generateUUID() {
-        // Simple RFC4122 v4 compliant UUID
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             const r = Math.random() * 16 | 0;
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -26,34 +25,50 @@
         });
     }
 
+    async function getClientIP() {
+        try {
+            const res = await fetch('/branch_logger/hooks/get_ip.php');
+            const data = await res.json();
+            return data.ip || 'unknown_ip';
+        } catch {
+            return 'unknown_ip';
+        }
+    }
+
+    // ---------------------------
+    // Client IP
+    // ---------------------------
+    let QA_CLIENT_IP = 'unknown_ip';
+
+    getClientIP().then(ip => {
+        QA_CLIENT_IP = ip;
+        window.__QA_CLIENT_IP__ = ip;
+        console.log('[QA] Client IP resolved:', QA_CLIENT_IP);
+    });
+
     let QA_DEVICE_NAME = getCookie(COOKIE_NAME);
     if (!QA_DEVICE_NAME) {
         QA_DEVICE_NAME = 'device_' + generateUUID();
         setCookie(COOKIE_NAME, QA_DEVICE_NAME, 365);
     }
 
-
     // ---------------------------
     // App program name
     // ---------------------------
     const QA_APP_PROGRAM = (() => {
         try {
-            // Get full path of current URL
             const pathParts = window.location.pathname.split('/').filter(Boolean);
-            // Take the first folder after the domain as the root folder name
             return pathParts.length > 0 ? pathParts[0] : 'UNKNOWN_APP';
         } catch {
             return 'UNKNOWN_APP';
         }
     })();
 
-
-
     if (window.__QA_HOOK_INSTALLED__) return;
     window.__QA_HOOK_INSTALLED__ = true;
 
     const FRONTEND_RECEIVER =
-    `${window.location.origin}/logger/hooks/receiver_frontend.php`;
+        `${window.location.origin}/branch_logger/hooks/receiver_frontend.php`;
 
     const originalFetch = window.fetch.bind(window);
 
@@ -102,6 +117,9 @@
     }
 
     function qaSendFrontendLog(payload) {
+        // Always include raw client IP in payload
+        payload.client_ip = QA_CLIENT_IP;
+
         return originalFetch(FRONTEND_RECEIVER, {
             method: 'POST',
             headers: {
@@ -133,7 +151,7 @@
 
         qaSendFrontendLog({
             type: 'frontend-io',
-            program_name: QA_APP_PROGRAM,   // ✅ add this
+            program_name: QA_APP_PROGRAM,
             device_name: QA_DEVICE_NAME,
             url: ctx.url,
             method: ctx.method,
@@ -145,7 +163,7 @@
     }
 
     /* ==========================
-       FETCH
+       FETCH HOOK
     ========================== */
     window.fetch = async (...args) => {
         const req = args[0] instanceof Request ? args[0] : null;
@@ -179,8 +197,9 @@
 
         qaSendFrontendLog({
             type: 'frontend-io',
-            program_name: QA_APP_PROGRAM,   // ✅ add this
+            program_name: QA_APP_PROGRAM,
             device_name: QA_DEVICE_NAME,
+            client_ip: QA_CLIENT_IP, // ✅ send IP
             url,
             method,
             request: normalizedBody,
@@ -193,7 +212,7 @@
     };
 
     /* ==========================
-       jQuery AJAX
+       jQuery AJAX HOOK
     ========================== */
     if (window.jQuery) {
         const originalAjax = $.ajax;
@@ -213,8 +232,9 @@
                     if (!shouldDedupe(dedupeKey)) {
                         qaSendFrontendLog({
                             type: 'frontend-io',
-                            program_name: QA_APP_PROGRAM,   // ✅ add this
+                            program_name: QA_APP_PROGRAM,
                             device_name: QA_DEVICE_NAME,
+                            client_ip: QA_CLIENT_IP, // ✅ send IP
                             url,
                             method,
                             request: normalizedBody,
@@ -233,8 +253,9 @@
                     if (!shouldDedupe(dedupeKey)) {
                         qaSendFrontendLog({
                             type: 'frontend-io',
-                            program_name: QA_APP_PROGRAM,   // ✅ add this
+                            program_name: QA_APP_PROGRAM,
                             device_name: QA_DEVICE_NAME,
+                            client_ip: QA_CLIENT_IP, // ✅ send IP
                             url,
                             method,
                             request: normalizedBody,
@@ -250,7 +271,7 @@
     }
 
     /* ==========================
-       XHR
+       XHR HOOK
     ========================== */
     const origOpen = XMLHttpRequest.prototype.open;
     const origSend = XMLHttpRequest.prototype.send;
@@ -282,8 +303,9 @@
 
                 qaSendFrontendLog({
                     type: 'frontend-io',
-                    program_name: QA_APP_PROGRAM,   // ✅ add this
+                    program_name: QA_APP_PROGRAM,
                     device_name: QA_DEVICE_NAME,
+                    client_ip: QA_CLIENT_IP, // ✅ send IP
                     url: this._qa_url,
                     method: this._qa_method,
                     request: normalizedBody,
@@ -297,7 +319,7 @@
     };
 
     /* ==========================
-       UI POPUPS (alert / confirm / prompt)
+       UI POPUPS HOOK
     ========================== */
     const _alert = window.alert;
     const _confirm = window.confirm;
@@ -372,8 +394,9 @@
 
         qaSendFrontendLog({
             type: 'frontend-io',
-            program_name: QA_APP_PROGRAM,   // ✅ add this
+            program_name: QA_APP_PROGRAM,
             device_name: QA_DEVICE_NAME,
+            client_ip: QA_CLIENT_IP, // ✅ send IP
             url,
             method,
             request: normalizedBody,
@@ -383,7 +406,5 @@
         });
     }, true); // capture phase
 
-    console.log('[QA] Frontend QA hook active (network + UI + validation + toast, logs normalized)');
+    console.log('[QA] Frontend QA hook active (network + UI + validation + toast, logs normalized with client IP)');
 })();
-
-

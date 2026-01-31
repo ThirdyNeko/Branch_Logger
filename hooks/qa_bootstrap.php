@@ -3,6 +3,11 @@
 define('QA_APP_PROGRAM', qa_get_app_root_name());
 define('QA_DEVICE_NAME', qa_get_device_name());
 
+// --------------------------------------------------
+// RAW IP DETECTION
+// --------------------------------------------------
+define('QA_CLIENT_IP', qa_get_raw_ip());
+
 /**
  * Get the name of the root folder of the app
  */
@@ -36,6 +41,28 @@ function qa_get_device_name(): string
     return 'device_' . substr(md5($ip . '|' . $ua), 0, 12);
 }
 
+function qa_get_raw_ip(): string {
+    $ip = 'unknown_ip';
+
+    // Common headers used by proxies / CDNs
+    $headers = [
+        'HTTP_CLIENT_IP',
+        'HTTP_X_FORWARDED_FOR',
+        'HTTP_X_REAL_IP',
+        'REMOTE_ADDR',
+    ];
+
+    foreach ($headers as $h) {
+        if (!empty($_SERVER[$h])) {
+            // X-Forwarded-For can contain multiple IPs, take the first one
+            $parts = explode(',', $_SERVER[$h]);
+            $ip = trim($parts[0]);
+            break;
+        }
+    }
+
+    return $ip;
+}
 
 
 // Rest of logging logic...
@@ -71,7 +98,7 @@ if (
     return;
 }
 
-$BACKEND_RECEIVER = 'http://localhost/logger/hooks/receiver_backend.php';
+$BACKEND_RECEIVER = 'http://localhost/branch_logger/hooks/receiver_backend.php';
 
 // --------------------------------------------------
 // INTERNAL STATE
@@ -91,6 +118,8 @@ function qa_backend_log(array $data)
     // Use the device_id from the payload if set
     $data['user_id'] = $data['device_id'] ?? $_SESSION['user']['id'] ?? 'guest';
     $data['program'] = $data['program'] ?? qa_get_app_root_name();
+    $data['device_name'] = $data['device_name'] ?? QA_DEVICE_NAME;
+    $data['client_ip'] = $data['client_ip'] ?? QA_CLIENT_IP; // <-- added raw IP
 
     $url = 'http://127.0.0.1/logger/hooks/receiver_backend.php';
 
@@ -106,7 +135,6 @@ function qa_backend_log(array $data)
     curl_exec($ch);
     curl_close($ch);
 }
-
 
 /**
  * Extract valid JSON from output
@@ -152,10 +180,8 @@ function qa_response_hash($endpoint, $request, $response)
 {
     return md5(
         $endpoint .
-        '|' .
-        json_encode($request) .
-        '|' .
-        json_encode($response)
+        '|' . json_encode($request) .
+        '|' . json_encode($response)
     );
 }
 
@@ -197,14 +223,15 @@ ob_start(function ($output) {
     $GLOBALS['__QA_LOGGED__'] = true;
 
     qa_backend_log([
-        'type'      => 'backend-response',
+        'type'         => 'backend-response',
         'program_name' => QA_APP_PROGRAM,
-        'device_name' => QA_DEVICE_NAME,
-        'endpoint'  => $endpoint,
-        'status'    => http_response_code(),
-        'request'   => $request,
-        'response'  => $json,
-        'timestamp' => date('c')
+        'device_name'  => QA_DEVICE_NAME,
+        'endpoint'     => $endpoint,
+        'status'       => http_response_code(),
+        'request'      => $request,
+        'response'     => $json,
+        'timestamp'    => date('c'),
+        'client_ip'    => QA_CLIENT_IP, // added raw IP
     ]);
 
     return $output;
@@ -248,15 +275,16 @@ set_error_handler(function ($severity, $message, $file, $line) {
     // LOG IT
     // ----------------------------
     qa_backend_log([
-        'type'        => 'backend-error',
-        'program_name'=> QA_APP_PROGRAM,
-        'device_name' => QA_DEVICE_NAME,
-        'response'    => [
+        'type'         => 'backend-error',
+        'program_name' => QA_APP_PROGRAM,
+        'device_name'  => QA_DEVICE_NAME,
+        'response'     => [
             'severity' => $severity,
             'message'  => $message,
         ],
-        'endpoint'    => "$file:$line",
-        'timestamp'   => date('c')
+        'endpoint'     => "$file:$line",
+        'timestamp'    => date('c'),
+        'client_ip'    => QA_CLIENT_IP, // added raw IP
     ]);
 
     return true; // stop PHP from re-processing
@@ -283,9 +311,9 @@ register_shutdown_function(function () {
     // 🚫 NEVER curl
 
     error_log('[QA_FATAL] ' . json_encode([
-        'file' => $error['file'],
-        'line' => $error['line'],
-        'msg'  => $error['message'],
+        'file'      => $error['file'],
+        'line'      => $error['line'],
+        'msg'       => $error['message'],
+        'client_ip' => QA_CLIENT_IP, // added raw IP
     ]));
 });
-

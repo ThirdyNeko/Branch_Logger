@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "Bimbim101602";
-$database = "qa_logger";
+$database = "branch_logger";
 
 $conn = new mysqli($servername, $username, $password, $database);
 if ($conn->connect_error) {

@@ -58,7 +58,7 @@ $statusCode   = (int)($data['status'] ?? 200);
 ========================== */
 // ❌ DO NOT trust payload IP
 // ✅ Always use server detected IP
-$client_ip = qa_get_client_ip(); // 🔥 AUTHORITATIVE
+$client_ip = $data['client_ip'] ?? qa_get_client_ip();
 
 $user_id = $device_name;
 

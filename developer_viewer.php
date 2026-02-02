@@ -15,7 +15,20 @@ $selectedSession   = $_GET['session'] ?? '';
 $selectedIteration = $_GET['iteration'] ?? '';
 $fromDate          = $_GET['from_date'] ?? '';
 $toDate            = $_GET['to_date'] ?? '';
-$clientIp   = $_GET['client_ip'] ?? ''; // <-- new
+$fromTime = $_GET['from_time'] ?? '';
+$toTime   = $_GET['to_time'] ?? '';
+$clientIp   = $_GET['client_ip'] ?? '';
+
+$fromDateTime = '';
+$toDateTime   = '';
+
+if ($fromDate) {
+    $fromDateTime = $fromDate . ' ' . ($fromTime ?: '00:00:00');
+}
+
+if ($toDate) {
+    $toDateTime = $toDate . ' ' . ($toTime ?: '23:59:59');
+}
 
 /* ==========================
    LOAD SESSION NAMES
@@ -343,7 +356,7 @@ $stmt = $db->prepare("
       . ($clientIp ? " AND client_ip=?" : "") . "
       AND (
             (? = '' OR ? = '')
-            OR DATE(created_at) BETWEEN ? AND ?
+            OR created_at BETWEEN ? AND ?
         )
     ORDER BY iteration ASC
 ");
@@ -353,20 +366,20 @@ if ($clientIp) {
         $selectedProgram,
         $selectedSession,
         $clientIp,
-        $fromDate,
-        $toDate,
-        $fromDate,
-        $toDate
+        $fromDateTime,
+        $toDateTime,
+        $fromDateTime,
+        $toDateTime
     );
 } else {
     $stmt->bind_param(
         'ssssss',
         $selectedProgram,
         $selectedSession,
-        $fromDate,
-        $toDate,
-        $fromDate,
-        $toDate
+        $fromDateTime,
+        $toDateTime,
+        $fromDateTime,
+        $toDateTime
     );
 }
 
@@ -389,7 +402,7 @@ sort($iterations);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>v</title>
+    <title>Branch Log Viewer</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -447,7 +460,20 @@ sort($iterations);
             <input type="date" class="form-control" value="<?= htmlspecialchars($toDate) ?>" onchange="updateDate('to', this.value)">
         </div>
     </div>
-
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">From Time:</label>
+            <input type="time" class="form-control"
+                value="<?= htmlspecialchars($fromTime) ?>"
+                onchange="updateDate('from_time', this.value)">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">To Time:</label>
+            <input type="time" class="form-control"
+                value="<?= htmlspecialchars($toTime) ?>"
+                onchange="updateDate('to_time', this.value)">
+        </div>
+    </div>
     <div class="col-md-4">
         <label class="form-label">Client IP:</label>
         <input type="text" class="form-control" value="<?= htmlspecialchars($clientIp) ?>" placeholder="Optional" onchange="updateDate('client_ip', this.value)">
@@ -464,14 +490,26 @@ sort($iterations);
                 SELECT DISTINCT session_id 
                 FROM qa_logs 
                 WHERE program_name=? 
-                AND DATE(created_at) BETWEEN ? AND ?"
+                AND created_at BETWEEN ? AND ?"
                 . ($clientIp ? " AND client_ip=?" : "") . "
                 ORDER BY session_id ASC
             ");
+
             if ($clientIp) {
-                $stmt->bind_param('ssss', $selectedProgram, $fromDate, $toDate, $clientIp);
+                $stmt->bind_param(
+                    'ssss',
+                    $selectedProgram,
+                    $fromDateTime,
+                    $toDateTime,
+                    $clientIp
+                );
             } else {
-                $stmt->bind_param('sss', $selectedProgram, $fromDate, $toDate);
+                $stmt->bind_param(
+                    'sss',
+                    $selectedProgram,
+                    $fromDateTime,
+                    $toDateTime
+                );
             }
         } else {
             $stmt = $db->prepare("
@@ -504,7 +542,8 @@ sort($iterations);
                         $label = $sessionNames[$sid] ?? str_replace('_',' ',$sid);
                     ?>
                     <li>
-                        <a class="dropdown-item" href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                        <a class="dropdown-item"
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -524,7 +563,8 @@ sort($iterations);
                     <!-- Session Summary Option -->
                     <li>
                         <a class="dropdown-item <?= $selectedIteration === 'summary' ? 'text-primary fw-semibold' : '' ?>"
-                            href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=summary&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+
                             Session Summary
                         </a>
                     </li>
@@ -538,8 +578,8 @@ sort($iterations);
                         if ($hasError)   $label .= ' - ⚠ Error';
                     ?>
                     <li>
-                        <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>" 
-                            href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=<?= $iter ?>&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                        <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -640,18 +680,34 @@ sort($iterations);
 function updateDate(type, value) {
     const params = new URLSearchParams(window.location.search);
 
-    if (type === 'from') params.set('from_date', value);
-    if (type === 'to') params.set('to_date', value);
-    if (type === 'client_ip') params.set('client_ip', value);
+    if (type === 'from')       params.set('from_date', value);
+    if (type === 'to')         params.set('to_date', value);
+    if (type === 'from_time')  params.set('from_time', value);
+    if (type === 'to_time')    params.set('to_time', value);
+    if (type === 'client_ip')  params.set('client_ip', value);
 
-    if ('<?= $selectedProgram ?>') params.set('user', '<?= htmlspecialchars($selectedProgram) ?>');
-    if ('<?= $selectedSession ?>') params.set('session', '<?= htmlspecialchars($selectedSession) ?>');
-    if ('<?= $selectedIteration ?>') params.set('iteration', '<?= htmlspecialchars($selectedIteration) ?>');
-    if ('<?= $clientIp ?>') params.set('client_ip', '<?= htmlspecialchars($clientIp) ?>');
+    // Preserve context
+    if ('<?= $selectedProgram ?>') {
+        params.set('user', '<?= htmlspecialchars($selectedProgram) ?>');
+    }
+
+    if ('<?= $selectedSession ?>') {
+        params.set('session', '<?= htmlspecialchars($selectedSession) ?>');
+    }
+
+    if ('<?= $selectedIteration ?>') {
+        params.set('iteration', '<?= htmlspecialchars($selectedIteration) ?>');
+    }
+
+    // ⚠️ Only preserve existing client_ip if NOT changing it
+    if (type !== 'client_ip' && '<?= $clientIp ?>') {
+        params.set('client_ip', '<?= htmlspecialchars($clientIp) ?>');
+    }
 
     window.location.href = '<?= $_SERVER['PHP_SELF'] ?>?' + params.toString();
 }
 </script>
+
 
 
 </body>

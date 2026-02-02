@@ -15,6 +15,7 @@ $selectedSession   = $_GET['session'] ?? '';
 $selectedIteration = $_GET['iteration'] ?? '';
 $fromDate          = $_GET['from_date'] ?? '';
 $toDate            = $_GET['to_date'] ?? '';
+$clientIp   = $_GET['client_ip'] ?? ''; // <-- new
 
 /* ==========================
    LOAD SESSION NAMES
@@ -253,23 +254,36 @@ $logsToShow = [];
 
 if ($selectedProgram && $selectedSession) {
     if ($selectedIteration === 'summary') {
-        // ✅ Load all iterations for this session
         $stmt = $db->prepare("
             SELECT *
             FROM qa_logs
-            WHERE program_name = ? AND session_id = ?
+            WHERE program_name = ? 
+            AND session_id = ?"
+            . ($clientIp ? " AND client_ip=?" : "") . "
             ORDER BY iteration ASC, created_at ASC
         ");
-        $stmt->bind_param('ss', $selectedProgram, $selectedSession);
+
+        if ($clientIp) {
+            $stmt->bind_param('sss', $selectedProgram, $selectedSession, $clientIp);
+        } else {
+            $stmt->bind_param('ss', $selectedProgram, $selectedSession);
+        }
     } else {
-        // Single iteration
         $stmt = $db->prepare("
             SELECT *
             FROM qa_logs
-            WHERE program_name = ? AND session_id = ? AND iteration = ?
+            WHERE program_name = ? 
+            AND session_id = ? 
+            AND iteration = ?"
+            . ($clientIp ? " AND client_ip=?" : "") . "
             ORDER BY created_at ASC
         ");
-        $stmt->bind_param('ssi', $selectedProgram, $selectedSession, $selectedIteration);
+
+        if ($clientIp) {
+            $stmt->bind_param('ssis', $selectedProgram, $selectedSession, $selectedIteration, $clientIp);
+        } else {
+            $stmt->bind_param('ssi', $selectedProgram, $selectedSession, $selectedIteration);
+        }
     }
 
     $stmt->execute();
@@ -325,22 +339,37 @@ $stmt = $db->prepare("
     SELECT DISTINCT iteration
     FROM qa_logs
     WHERE program_name = ?
-    AND session_id = ?
-    AND (
+      AND session_id = ?"
+      . ($clientIp ? " AND client_ip=?" : "") . "
+      AND (
             (? = '' OR ? = '')
             OR DATE(created_at) BETWEEN ? AND ?
         )
     ORDER BY iteration ASC
 ");
-$stmt->bind_param(
-    'ssssss',
-    $selectedProgram,
-    $selectedSession,
-    $fromDate,
-    $toDate,
-    $fromDate,
-    $toDate
-);
+if ($clientIp) {
+    $stmt->bind_param(
+        'sssssss',
+        $selectedProgram,
+        $selectedSession,
+        $clientIp,
+        $fromDate,
+        $toDate,
+        $fromDate,
+        $toDate
+    );
+} else {
+    $stmt->bind_param(
+        'ssssss',
+        $selectedProgram,
+        $selectedSession,
+        $fromDate,
+        $toDate,
+        $fromDate,
+        $toDate
+    );
+}
+
 $stmt->execute();
 $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) {
@@ -360,7 +389,7 @@ sort($iterations);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Developer QA Viewer</title>
+    <title>v</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
@@ -377,7 +406,7 @@ sort($iterations);
 
 <div class="container py-4">
 
-    <h1 class="text-center mb-3">Developer QA Viewer</h1>
+    <h1 class="text-center mb-3">Branch Log Viewer</h1>
     <hr>
 
     <!-- Header Buttons -->
@@ -398,7 +427,8 @@ sort($iterations);
                 <ul class="dropdown-menu w-100" aria-labelledby="programDropdown">
                     <?php foreach ($programs as $programId => $programName): ?>
                         <li>
-                            <a class="dropdown-item" href="?user=<?= htmlspecialchars($programId) ?>&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?>">
+                            <a class="dropdown-item" 
+                                href="?user=<?= urlencode($programId) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                                 <?= htmlspecialchars($programName) ?>
                             </a>
                         </li>
@@ -418,6 +448,11 @@ sort($iterations);
         </div>
     </div>
 
+    <div class="col-md-4">
+        <label class="form-label">Client IP:</label>
+        <input type="text" class="form-control" value="<?= htmlspecialchars($clientIp) ?>" placeholder="Optional" onchange="updateDate('client_ip', this.value)">
+    </div>
+
     <!-- Session & Iteration Row (only if program selected) -->
     <?php if ($selectedProgram): ?>
     <div class="row g-2 mb-3">
@@ -425,11 +460,32 @@ sort($iterations);
         // Fetch sessions
         $sessions = [];
         if ($fromDate && $toDate) {
-            $stmt = $db->prepare("SELECT DISTINCT session_id FROM qa_logs WHERE program_name=? AND DATE(created_at) BETWEEN ? AND ? ORDER BY session_id ASC");
-            $stmt->bind_param('sss', $selectedProgram, $fromDate, $toDate);
+            $stmt = $db->prepare("
+                SELECT DISTINCT session_id 
+                FROM qa_logs 
+                WHERE program_name=? 
+                AND DATE(created_at) BETWEEN ? AND ?"
+                . ($clientIp ? " AND client_ip=?" : "") . "
+                ORDER BY session_id ASC
+            ");
+            if ($clientIp) {
+                $stmt->bind_param('ssss', $selectedProgram, $fromDate, $toDate, $clientIp);
+            } else {
+                $stmt->bind_param('sss', $selectedProgram, $fromDate, $toDate);
+            }
         } else {
-            $stmt = $db->prepare("SELECT DISTINCT session_id FROM qa_logs WHERE program_name=? ORDER BY session_id ASC");
-            $stmt->bind_param('s', $selectedProgram);
+            $stmt = $db->prepare("
+                SELECT DISTINCT session_id 
+                FROM qa_logs 
+                WHERE program_name=?"
+                . ($clientIp ? " AND client_ip=?" : "") . "
+                ORDER BY session_id ASC
+            ");
+            if ($clientIp) {
+                $stmt->bind_param('ss', $selectedProgram, $clientIp);
+            } else {
+                $stmt->bind_param('s', $selectedProgram);
+            }
         }
         $stmt->execute();
         $res = $stmt->get_result();
@@ -448,7 +504,7 @@ sort($iterations);
                         $label = $sessionNames[$sid] ?? str_replace('_',' ',$sid);
                     ?>
                     <li>
-                        <a class="dropdown-item" href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($sid) ?>&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?>">
+                        <a class="dropdown-item" href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -468,7 +524,7 @@ sort($iterations);
                     <!-- Session Summary Option -->
                     <li>
                         <a class="dropdown-item <?= $selectedIteration === 'summary' ? 'text-primary fw-semibold' : '' ?>"
-                        href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=summary&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?>">
+                            href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=summary&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                             Session Summary
                         </a>
                     </li>
@@ -483,7 +539,7 @@ sort($iterations);
                     ?>
                     <li>
                         <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>" 
-                        href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=<?= $iter ?>&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?>">
+                            href="?user=<?= htmlspecialchars($selectedProgram) ?>&session=<?= htmlspecialchars($selectedSession) ?>&iteration=<?= $iter ?>&from_date=<?= htmlspecialchars($fromDate) ?>&to_date=<?= htmlspecialchars($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -586,76 +642,17 @@ function updateDate(type, value) {
 
     if (type === 'from') params.set('from_date', value);
     if (type === 'to') params.set('to_date', value);
+    if (type === 'client_ip') params.set('client_ip', value);
 
-    // Keep the current program/session/iteration in URL
     if ('<?= $selectedProgram ?>') params.set('user', '<?= htmlspecialchars($selectedProgram) ?>');
     if ('<?= $selectedSession ?>') params.set('session', '<?= htmlspecialchars($selectedSession) ?>');
     if ('<?= $selectedIteration ?>') params.set('iteration', '<?= htmlspecialchars($selectedIteration) ?>');
+    if ('<?= $clientIp ?>') params.set('client_ip', '<?= htmlspecialchars($clientIp) ?>');
 
-    // Redirect to same page with new date params
     window.location.href = '<?= $_SERVER['PHP_SELF'] ?>?' + params.toString();
 }
 </script>
 
-<?php
-$latestLog = ['session_id' => '', 'iteration' => 0];
-
-
-if ($selectedProgram) {
-    $stmt = $db->prepare("
-        SELECT session_id, iteration
-        FROM qa_logs
-        WHERE program_name = ?
-        ORDER BY created_at DESC
-        LIMIT 1
-    ");
-    $stmt->bind_param('s', $selectedProgram);
-    $stmt->execute();
-    $res = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    if ($res) {
-        $latestLog = [
-            'session_id' => $res['session_id'],
-            'iteration' => (int)$res['iteration']
-        ];
-    }
-}
-?>
-
-<script>
-const selectedProgram = "<?= htmlspecialchars($selectedProgram) ?>";
-const latestSessionOnLoad = "<?= htmlspecialchars($latestLog['session_id']) ?>";
-const latestIterationOnLoad = <?= $latestLog['iteration'] ?>;
-
-if (selectedProgram) {
-    setInterval(async () => {
-        try {
-            const res = await fetch('iteration_logic/logger_iteration_status.php?program=' 
-                + encodeURIComponent(selectedProgram), 
-                { cache: 'no-store' });
-            const data = await res.json();
-
-            // Only redirect if a new iteration or session has been added after page load
-            const hasNewIteration =
-                data.latestIteration > latestIterationOnLoad
-                || data.latestSession !== latestSessionOnLoad;
-
-            if (data.active && hasNewIteration) {
-                window.location.href = '<?= $_SERVER['PHP_SELF'] ?>'
-                    + '?user=' + encodeURIComponent(selectedProgram)
-                    + '&session=' + encodeURIComponent(data.latestSession)
-                    + '&iteration=' + data.latestIteration
-                    + '&from_date=<?= htmlspecialchars($fromDate) ?>'
-                    + '&to_date=<?= htmlspecialchars($toDate) ?>';
-            }
-
-        } catch (e) {
-            console.error('Polling error', e);
-        }
-    }, 2000);
-}
-</script>
 
 </body>
 </html>

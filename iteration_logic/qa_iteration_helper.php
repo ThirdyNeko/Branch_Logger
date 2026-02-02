@@ -57,7 +57,7 @@ function qa_get_session_state(): array
         SELECT session_id, iteration, remarks_iteration, last_second, program_name
         FROM qa_session_state
         WHERE user_id = ? AND program_name = ?
-        ORDER BY session_id DESC
+        ORDER BY CAST(SUBSTRING_INDEX(session_id, '_', -1) AS UNSIGNED) DESC
         LIMIT 1
     ");
     $stmt->bind_param('ss', $userId, $program);

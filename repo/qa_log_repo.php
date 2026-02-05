@@ -14,8 +14,8 @@ class QaLogRepository
     {
         $sql = "
             INSERT INTO qa_logs
-            (user_id, session_id, iteration, device_name, program_name, type, endpoint, method, request_body, response_body, status_code, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
+            (user_id, session_id, iteration, device_name, program_name, client_ip, type, endpoint, method, request_body, response_body, status_code, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE())
         ";
 
         $stmt = $this->db->prepare($sql);
@@ -25,6 +25,7 @@ class QaLogRepository
             $data['iteration'],
             $data['device_name'],
             $data['program_name'],
+            $data['client_ip'],
             $data['type'],
             $data['endpoint'],
             $data['method'],
@@ -46,3 +47,4 @@ class QaLogRepository
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 }
+

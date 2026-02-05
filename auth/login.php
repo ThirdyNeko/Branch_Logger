@@ -3,6 +3,7 @@ session_name('QA_LOGGER_SESSION');
 session_start();
 
 require __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../repo/user_repo.php';
 
 $error = '';
 
@@ -11,18 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
 
-    // 🔐 Fetch user
-    $stmt = $conn->prepare("
-        SELECT id, username, password_hash, role, first_login
-        FROM users
-        WHERE username = ?
-        LIMIT 1
-    ");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
+    $userRepo = new UserRepository(qa_db());
 
-    $result = $stmt->get_result();
-    $user   = $result->fetch_assoc();
+    // 🔐 Fetch user
+    $user = $userRepo->findByUsername($username);
 
     // ✅ Verify credentials
     if ($user && password_verify($password, $user['password_hash'])) {
@@ -43,13 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 🔁 ROLE-BASED REDIRECT
         switch ($user['role']) {
             case 'developer':
-                header('Location: ../developer_viewer.php');
-                break;
-
-            case 'qa':
                 header('Location: ../index.php');
                 break;
-
+    
             case 'admin':
                 header('Location: ../auth/create_user.php');
                 break;

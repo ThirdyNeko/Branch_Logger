@@ -19,6 +19,7 @@ error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../iteration_logic/qa_iteration_helper.php';
 require_once __DIR__ . '/get_ip.php'; // ✅ SERVER IP (authoritative)
+require_once __DIR__ . '/../repo/qa_log_repo.php'; // Repository
 
 session_start();
 
@@ -59,70 +60,30 @@ if (($data['type'] ?? '') === 'frontend-ui' || isset($data['ui_type'])) {
     $data['type'] = 'frontend-io';
     $data['response'] = $data['message'] ?? '[UI message]';
 }
+$client_ip = $data['client_ip'] ?? qa_get_client_ip();
 
 /* ==========================
    Extract log data
 ========================== */
-$type         = $data['type'] ?? 'frontend-io';
-$program_name = $data['program_name'] ?? 'UNKNOWN_APP';
-$device_name  = $data['device_name'] ?? 'guest';
-
-$endpoint     = $data['url'] ?? null;
-$method       = $data['method'] ?? null;
-$requestBody  = isset($data['request']) ? json_encode($data['request']) : null;
-$responseBody = isset($data['response']) ? json_encode($data['response']) : null;
-$statusCode   = (int)($data['status'] ?? 200);
-
-/* ==========================
-   SERVER-SIDE IP (OVERRIDE)
-========================== */
-// ❌ DO NOT trust frontend IP
-// ✅ Always use server detected IP
-$client_ip = qa_get_client_ip(); // 🔥 AUTHORITATIVE
-
+$logData = [
+    'user_id'       => $user_id,
+    'session_id'    => $session_id,
+    'iteration'     => $iteration,
+    'device_name'   => $device_name,
+    'program_name'  => $data['program_name'] ?? 'UNKNOWN_APP',
+    'client_ip'    => $client_ip,
+    'type'          => $data['type'] ?? 'backend-response',
+    'endpoint'      => $data['endpoint'] ?? null,
+    'method'        => $data['method'] ?? null,
+    'request_body'  => isset($data['request']) ? json_encode($data['request']) : null,
+    'response_body' => isset($data['response']) ? json_encode($data['response']) : null,
+    'status_code'   => $data['status'] ?? 200
+];
 
 /* ==========================
-   Insert frontend log
+   Insert backend log via repository
 ========================== */
-$db = qa_db();
-
-$stmt = $db->prepare("
-    INSERT INTO qa_logs
-    (
-        user_id,
-        session_id,
-        iteration,
-        device_name,
-        program_name,
-        client_ip,
-        type,
-        endpoint,
-        method,
-        request_body,
-        response_body,
-        status_code,
-        created_at
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-");
-
-$stmt->bind_param(
-    'ssissssssssi',
-    $user_id,
-    $session_id,
-    $iteration,
-    $device_name,
-    $program_name,
-    $client_ip,
-    $type,
-    $endpoint,
-    $method,
-    $requestBody,
-    $responseBody,
-    $statusCode
-);
-
-$stmt->execute();
-$stmt->close();
+$logRepo = new QaLogRepository(qa_db());
+$logRepo->insertLog($logData);
 
 http_response_code(204);

@@ -9,28 +9,41 @@
  *
  * @return array<int, bool> iterations as keys, value always true
  */
+
 /**
- * Get all iterations for a program (optionally by session and date range)
+ * Get all iterations for a session, optionally filtered by date + client IP.
+ *
+ * @return int[]
  */
-function getAllIterations(PDO $db, string $program, ?string $session = null, ?string $fromDate = null, ?string $toDate = null): array
-{
+function getAllIterations(
+    PDO $db,
+    string $program,
+    string $session,
+    ?string $fromDateTime = null,
+    ?string $toDateTime = null,
+    ?string $clientIp = null
+): array {
+    $params = [
+        ':program' => $program,
+        ':session' => $session
+    ];
+
     $sql = "
-        SELECT DISTINCT iteration, session_id
+        SELECT DISTINCT iteration
         FROM qa_logs
-        WHERE program_name = :program_name
+        WHERE program_name = :program
+          AND session_id = :session
     ";
 
-    $params = [':program_name' => $program];
-
-    if ($session) {
-        $sql .= " AND session_id = :session_id";
-        $params[':session_id'] = $session;
+    if ($clientIp) {
+        $sql .= " AND client_ip = :client_ip";
+        $params[':client_ip'] = $clientIp;
     }
 
-    if ($fromDate && $toDate) {
-        $sql .= " AND CONVERT(DATE, created_at) BETWEEN :from_date AND :to_date";
-        $params[':from_date'] = $fromDate;
-        $params[':to_date'] = $toDate;
+    if ($fromDateTime && $toDateTime) {
+        $sql .= " AND created_at BETWEEN :from_dt AND :to_dt";
+        $params[':from_dt'] = $fromDateTime;
+        $params[':to_dt']   = $toDateTime;
     }
 
     $sql .= " ORDER BY iteration ASC";
@@ -38,40 +51,48 @@ function getAllIterations(PDO $db, string $program, ?string $session = null, ?st
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
 
-    $iterations = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $iterations[] = (int)$row['iteration'];
-    }
-
-    return array_unique($iterations);
+    return array_map(
+        fn($r) => (int)$r['iteration'],
+        $stmt->fetchAll(PDO::FETCH_ASSOC)
+    );
 }
 
 /**
- * Get iterations with errors for a program (optionally by session)
+ * Get iterations that contain backend errors/fatals.
+ *
+ * @return array<int,bool> iteration => true
  */
-function getErrorIterations(PDO $db, string $program, ?string $session = null): array
-{
+function getErrorIterations(
+    PDO $db,
+    string $program,
+    string $session,
+    ?string $clientIp = null
+): array {
+    $params = [
+        ':program' => $program,
+        ':session' => $session
+    ];
+
     $sql = "
         SELECT DISTINCT iteration
         FROM qa_logs
-        WHERE program_name = :program_name
+        WHERE program_name = :program
+          AND session_id = :session
           AND type IN ('backend-error', 'backend-fatal')
     ";
 
-    $params = [':program_name' => $program];
-
-    if ($session) {
-        $sql .= " AND session_id = :session_id";
-        $params[':session_id'] = $session;
+    if ($clientIp) {
+        $sql .= " AND client_ip = :client_ip";
+        $params[':client_ip'] = $clientIp;
     }
 
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
 
-    $errorIterations = [];
+    $errors = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $errorIterations[(int)$row['iteration']] = true;
+        $errors[(int)$row['iteration']] = true;
     }
 
-    return $errorIterations;
+    return $errors;
 }

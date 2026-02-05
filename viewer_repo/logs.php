@@ -155,3 +155,88 @@ function loadLogs(PDO $db, string $program, string $session, int|string $iterati
 
     return $logs;
 }
+
+
+/*----------------
+Branch Code
+----------------*/
+
+function loadLogsForViewer(
+    PDO $db,
+    string $program,
+    string $session,
+    $iteration,                 // int|string ('summary')
+    ?string $clientIp,
+    array $filteredRemarked
+): array {
+    if (!$program || !$session) {
+        return [];
+    }
+
+    if ($iteration === 'summary') {
+        $sql = "
+            SELECT *
+            FROM qa_logs
+            WHERE program_name = :program
+              AND session_id   = :session
+        ";
+
+        if ($clientIp) {
+            $sql .= " AND client_ip = :client_ip";
+        }
+
+        $sql .= " ORDER BY iteration ASC, created_at ASC";
+
+        $params = [
+            ':program' => $program,
+            ':session' => $session,
+        ];
+
+        if ($clientIp) {
+            $params[':client_ip'] = $clientIp;
+        }
+
+    } else {
+        $sql = "
+            SELECT *
+            FROM qa_logs
+            WHERE program_name = :program
+              AND session_id   = :session
+              AND iteration    = :iteration
+        ";
+
+        if ($clientIp) {
+            $sql .= " AND client_ip = :client_ip";
+        }
+
+        $sql .= " ORDER BY created_at ASC";
+
+        $params = [
+            ':program'   => $program,
+            ':session'   => $session,
+            ':iteration' => (int)$iteration,
+        ];
+
+        if ($clientIp) {
+            $params[':client_ip'] = $clientIp;
+        }
+    }
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Inject remark info
+    foreach ($logs as &$log) {
+        $iter = (int)$log['iteration'];
+        $remarkEntry = $filteredRemarked[$session][$iter] ?? null;
+
+        if ($remarkEntry) {
+            $log['_remark_name'] = $remarkEntry['name'];
+            $log['_remark_text'] = $remarkEntry['remark'];
+        }
+    }
+    unset($log);
+
+    return $logs;
+}

@@ -214,7 +214,7 @@ ob_start(function ($output) {
     qa_backend_log([
         'type'         => 'backend-response',
         'program_name' => QA_APP_PROGRAM,
-        'device_name'  => QA_DEVICE_NAME,
+        'device_name' => $real_client_ip,
         'endpoint'     => $endpoint,
         'status'       => http_response_code(),
         'request'      => $request,
@@ -266,7 +266,7 @@ set_error_handler(function ($severity, $message, $file, $line) {
     qa_backend_log([
         'type'         => 'backend-error',
         'program_name' => QA_APP_PROGRAM,
-        'device_name'  => QA_DEVICE_NAME,
+        'device_name' => $real_client_ip,
         'response'     => [
             'severity' => $severity,
             'message'  => $message,

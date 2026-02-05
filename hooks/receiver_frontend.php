@@ -31,14 +31,10 @@ if (!$data || empty($data['timestamp'])) {
     exit;
 }
 
-try {
-    $userId = qa_get_user_id();
-} catch (Exception $e) {
-    http_response_code(403);
-    exit;
-}
+$device_name  = qa_get_client_ip();
+$user_id = $device_name;
 
-$GLOBALS['__QA_USER_ID__']  = $data['device_name'] ?? '';
+$GLOBALS['__QA_USER_ID__']  = $user_id;
 $GLOBALS['__QA_PROGRAM__'] = $data['program_name'] ?? '';
 
 /* ==========================
@@ -84,7 +80,6 @@ $statusCode   = (int)($data['status'] ?? 200);
 // ✅ Always use server detected IP
 $client_ip = qa_get_client_ip(); // 🔥 AUTHORITATIVE
 
-$user_id = $device_name;
 
 /* ==========================
    Insert frontend log

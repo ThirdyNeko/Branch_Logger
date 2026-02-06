@@ -41,7 +41,7 @@ $state = qa_get_session_state();
 $session_id = $state['session_id'];
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
 
-$branch = getBranchByIp($client_ip);
+$branch = getBranchByIp($client_ip) ?? "Guest";
 
 
 /* ==========================

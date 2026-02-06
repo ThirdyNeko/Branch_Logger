@@ -62,7 +62,7 @@ if (($data['type'] ?? '') === 'frontend-ui' || isset($data['ui_type'])) {
     $data['response'] = $data['message'] ?? '[UI message]';
 }
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
-$branch = getBranchByIp($client_ip);
+$branch = getBranchByIp($client_ip) ?? "Guest";
 
 /* ==========================
    Extract log data

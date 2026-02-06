@@ -19,7 +19,6 @@ function getBranchByIp(string $ip): ?string
     return null; // unknown / outside WAN
 }
 
-
 function ip_in_cidr(string $ip, string $cidr): bool
 {
     if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {

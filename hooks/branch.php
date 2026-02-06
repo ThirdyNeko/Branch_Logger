@@ -5,12 +5,18 @@ function getBranchByIp(string $ip): ?string
     $map = [
         'SHOWROOM' => [
             '192.168.40.0/24',
+            '::1' // localhost IPv6
         ]
     ];
 
     foreach ($map as $branch => $ranges) {
         foreach ($ranges as $cidr) {
-            if (ip_in_cidr($ip, $cidr)) {
+            // Simple IPv6 direct match
+            if ($ip === $cidr) {
+                return $branch;
+            }
+            // IPv4 CIDR check
+            if (strpos($cidr, '/') !== false && ip_in_cidr($ip, $cidr)) {
                 return $branch;
             }
         }

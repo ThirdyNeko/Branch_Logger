@@ -6,6 +6,7 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../iteration_logic/qa_iteration_helper.php';
 require_once __DIR__ . '/get_ip.php'; // ✅ SERVER-SIDE IP (authoritative)
 require_once __DIR__ . '/../repo/qa_log_repo.php'; // Repository
+require_once __DIR__ . '/branch.php'; // Repository
 
 /* ==========================
    Read backend payload
@@ -40,6 +41,9 @@ $state = qa_get_session_state();
 $session_id = $state['session_id'];
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
 
+$branch = getBranchByIp($client_ip);
+
+
 /* ==========================
    Extract log data
 ========================== */
@@ -49,7 +53,7 @@ $logData = [
     'iteration'     => $iteration,
     'device_name'   => $device_name,
     'program_name'  => $data['program_name'] ?? 'UNKNOWN_APP',
-    'client_ip'    => $client_ip,
+    'branch_id'     => $branch,
     'type'          => $data['type'] ?? 'backend-response',
     'endpoint'      => $data['endpoint'] ?? null,
     'method'        => $data['method'] ?? null,

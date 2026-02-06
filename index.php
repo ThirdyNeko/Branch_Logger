@@ -24,7 +24,7 @@ $fromDate            = $_GET['from_date'] ?? '';
 $toDate              = $_GET['to_date'] ?? '';
 $fromTime            = $_GET['from_time'] ?? '';
 $toTime              = $_GET['to_time'] ?? '';
-$clientIp            = $_GET['client_ip'] ?? '';
+$branch            = $_GET['branch'] ?? '';
 
 $fromDateTime        = '';
 $toDateTime          = '';
@@ -222,7 +222,7 @@ $logsToShow = loadLogsForViewer(
     $selectedProgram,
     $selectedSession,
     $selectedIteration,
-    $clientIp ?? null,
+    $branch ?? null,
     $filteredRemarked
 );
 
@@ -247,14 +247,14 @@ if ($selectedProgram && $selectedSession) {
         $selectedSession,
         $fromDateTime,
         $toDateTime,
-        $clientIp
+        $branch
     );
 
     $errorIterations = getErrorIterations(
         $db,
         $selectedProgram,
         $selectedSession,
-        $clientIp
+        $branch
     );
 
     // Ensure error iterations always appear
@@ -311,7 +311,7 @@ if ($selectedProgram && $selectedSession) {
                     <?php foreach ($programs as $programId => $programName): ?>
                         <li>
                             <a class="dropdown-item" 
-                                href="?user=<?= urlencode($programId) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                                href="?user=<?= urlencode($programId) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
                                 <?= htmlspecialchars($programName) ?>
                             </a>
                         </li>
@@ -345,8 +345,8 @@ if ($selectedProgram && $selectedSession) {
         </div>
     </div>
     <div class="col-md-4">
-        <label class="form-label">Client IP:</label>
-        <input type="text" class="form-control" value="<?= htmlspecialchars($clientIp) ?>" placeholder="Optional" onchange="updateDate('client_ip', this.value)">
+        <label class="form-label">Branch:</label>
+        <input type="text" class="form-control" value="<?= htmlspecialchars($branch) ?>" placeholder="Optional" onchange="updateDate('branch', this.value)">
     </div>
 
     <!-- Session & Iteration Row (only if program selected) -->
@@ -362,7 +362,7 @@ if ($selectedProgram && $selectedSession) {
                 $selectedProgram,
                 $fromDate ? $fromDateTime : null,
                 $toDate   ? $toDateTime   : null,
-                $clientIp
+                $branch
             );
         }
         ?>
@@ -379,7 +379,7 @@ if ($selectedProgram && $selectedSession) {
                     ?>
                     <li>
                         <a class="dropdown-item"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -399,7 +399,7 @@ if ($selectedProgram && $selectedSession) {
                     <!-- Session Summary Option -->
                     <li>
                         <a class="dropdown-item <?= $selectedIteration === 'summary' ? 'text-primary fw-semibold' : '' ?>"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
 
                             Session Summary
                         </a>
@@ -415,7 +415,7 @@ if ($selectedProgram && $selectedSession) {
                     ?>
                     <li>
                         <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $clientIp ? '&client_ip=' . urlencode($clientIp) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -520,7 +520,7 @@ function updateDate(type, value) {
     if (type === 'to')         params.set('to_date', value);
     if (type === 'from_time')  params.set('from_time', value);
     if (type === 'to_time')    params.set('to_time', value);
-    if (type === 'client_ip')  params.set('client_ip', value);
+    if (type === 'branch')  params.set('branch', value);
 
     // Preserve context
     if ('<?= $selectedProgram ?>') {
@@ -535,9 +535,9 @@ function updateDate(type, value) {
         params.set('iteration', '<?= htmlspecialchars($selectedIteration) ?>');
     }
 
-    // ⚠️ Only preserve existing client_ip if NOT changing it
-    if (type !== 'client_ip' && '<?= $clientIp ?>') {
-        params.set('client_ip', '<?= htmlspecialchars($clientIp) ?>');
+    // ⚠️ Only preserve existing branch if NOT changing it
+    if (type !== 'branch' && '<?= $branch ?>') {
+        params.set('branch', '<?= htmlspecialchars($branch) ?>');
     }
 
     window.location.href = '<?= $_SERVER['PHP_SELF'] ?>?' + params.toString();

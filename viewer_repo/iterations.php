@@ -36,8 +36,8 @@ function getAllIterations(
     ";
 
     if ($clientIp) {
-        $sql .= " AND client_ip = :client_ip";
-        $params[':client_ip'] = $clientIp;
+        $sql .= " AND branch_id = :branch_id";
+        $params[':branch_id'] = $clientIp;
     }
 
     if ($fromDateTime && $toDateTime) {
@@ -82,8 +82,8 @@ function getErrorIterations(
     ";
 
     if ($clientIp) {
-        $sql .= " AND client_ip = :client_ip";
-        $params[':client_ip'] = $clientIp;
+        $sql .= " AND branch_id = :branch_id";
+        $params[':branch_id'] = $clientIp;
     }
 
     $stmt = $db->prepare($sql);

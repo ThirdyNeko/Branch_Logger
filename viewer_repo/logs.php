@@ -182,7 +182,7 @@ function loadLogsForViewer(
         ";
 
         if ($clientIp) {
-            $sql .= " AND client_ip = :client_ip";
+            $sql .= " AND branch_id = :branch_id";
         }
 
         $sql .= " ORDER BY iteration ASC, created_at ASC";
@@ -193,7 +193,7 @@ function loadLogsForViewer(
         ];
 
         if ($clientIp) {
-            $params[':client_ip'] = $clientIp;
+            $params[':branch_id'] = $clientIp;
         }
 
     } else {
@@ -206,7 +206,7 @@ function loadLogsForViewer(
         ";
 
         if ($clientIp) {
-            $sql .= " AND client_ip = :client_ip";
+            $sql .= " AND branch_id = :branch_id";
         }
 
         $sql .= " ORDER BY created_at ASC";
@@ -218,7 +218,7 @@ function loadLogsForViewer(
         ];
 
         if ($clientIp) {
-            $params[':client_ip'] = $clientIp;
+            $params[':branch_id'] = $clientIp;
         }
     }
 

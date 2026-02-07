@@ -40,7 +40,7 @@ if ($iteration === null) {
 $state = qa_get_session_state();
 $session_id = $state['session_id'];
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
-
+$pc_name = gethostbyaddr($client_ip) ?: $client_ip;
 $branch = getBranchByIp($client_ip) ?? "Guest";
 
 
@@ -59,7 +59,8 @@ $logData = [
     'method'        => $data['method'] ?? null,
     'request_body'  => isset($data['request']) ? json_encode($data['request']) : null,
     'response_body' => isset($data['response']) ? json_encode($data['response']) : null,
-    'status_code'   => $data['status'] ?? 200
+    'status_code'   => $data['status'] ?? 200,
+    'pc_name'      => $pc_name
 ];
 
 /* ==========================

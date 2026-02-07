@@ -37,6 +37,13 @@ function qa_get_device_name(): string
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown_ua';
     return 'device_' . substr(md5($ip . '|' . $ua), 0, 12);
 }
+
+function qa_get_pc_name(): string
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown_ip';
+    return gethostbyaddr($ip) ?: $ip;
+}
+
 function qa_get_client_ip(): string
 {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {

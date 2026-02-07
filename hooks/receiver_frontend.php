@@ -63,6 +63,7 @@ if (($data['type'] ?? '') === 'frontend-ui' || isset($data['ui_type'])) {
 }
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
 $branch = getBranchByIp($client_ip) ?? "Guest";
+$pc_name = gethostbyaddr($client_ip) ?: $client_ip;
 
 /* ==========================
    Extract log data
@@ -79,7 +80,8 @@ $logData = [
     'method'        => $data['method'] ?? null,
     'request_body'  => isset($data['request']) ? json_encode($data['request']) : null,
     'response_body' => isset($data['response']) ? json_encode($data['response']) : null,
-    'status_code'   => $data['status'] ?? 200
+    'status_code'   => $data['status'] ?? 200,
+    'pc_name'      => $pc_name
 ];
 
 /* ==========================

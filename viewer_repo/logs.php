@@ -166,12 +166,18 @@ function loadLogsForViewer(
     string $program,
     string $session,
     $iteration,                 // int|string ('summary')
-    ?string $clientIp,
+    ?string $branchId,
+    ?string $userId,
     array $filteredRemarked
 ): array {
     if (!$program || !$session) {
         return [];
     }
+
+    $params = [
+        ':program' => $program,
+        ':session' => $session,
+    ];
 
     if ($iteration === 'summary') {
         $sql = "
@@ -180,22 +186,6 @@ function loadLogsForViewer(
             WHERE program_name = :program
               AND session_id   = :session
         ";
-
-        if ($clientIp) {
-            $sql .= " AND branch_id = :branch_id";
-        }
-
-        $sql .= " ORDER BY iteration ASC, created_at ASC";
-
-        $params = [
-            ':program' => $program,
-            ':session' => $session,
-        ];
-
-        if ($clientIp) {
-            $params[':branch_id'] = $clientIp;
-        }
-
     } else {
         $sql = "
             SELECT *
@@ -205,22 +195,24 @@ function loadLogsForViewer(
               AND iteration    = :iteration
         ";
 
-        if ($clientIp) {
-            $sql .= " AND branch_id = :branch_id";
-        }
-
-        $sql .= " ORDER BY created_at ASC";
-
-        $params = [
-            ':program'   => $program,
-            ':session'   => $session,
-            ':iteration' => (int)$iteration,
-        ];
-
-        if ($clientIp) {
-            $params[':branch_id'] = $clientIp;
-        }
+        $params[':iteration'] = (int) $iteration;
     }
+
+    // Optional branch filter
+    if (!empty($branchId)) {
+        $sql .= " AND branch_id = :branch_id";
+        $params[':branch_id'] = $branchId;
+    }
+
+    // ✅ Optional user filter
+    if (!empty($userId)) {
+        $sql .= " AND user_id = :user_id";
+        $params[':user_id'] = $userId;
+    }
+
+    $sql .= $iteration === 'summary'
+        ? " ORDER BY iteration ASC, created_at ASC"
+        : " ORDER BY created_at ASC";
 
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
@@ -228,7 +220,7 @@ function loadLogsForViewer(
 
     // Inject remark info
     foreach ($logs as &$log) {
-        $iter = (int)$log['iteration'];
+        $iter = (int) $log['iteration'];
         $remarkEntry = $filteredRemarked[$session][$iter] ?? null;
 
         if ($remarkEntry) {

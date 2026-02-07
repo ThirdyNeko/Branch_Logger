@@ -25,6 +25,7 @@ $toDate              = $_GET['to_date'] ?? '';
 $fromTime            = $_GET['from_time'] ?? '';
 $toTime              = $_GET['to_time'] ?? '';
 $branch            = $_GET['branch'] ?? '';
+$userId            = $_GET['user_id'] ?? '';
 
 $fromDateTime        = '';
 $toDateTime          = '';
@@ -223,6 +224,7 @@ $logsToShow = loadLogsForViewer(
     $selectedSession,
     $selectedIteration,
     $branch ?? null,
+    $userId ?: null,
     $filteredRemarked
 );
 
@@ -247,14 +249,16 @@ if ($selectedProgram && $selectedSession) {
         $selectedSession,
         $fromDateTime,
         $toDateTime,
-        $branch
+        $branch,
+        $userId
     );
 
     $errorIterations = getErrorIterations(
         $db,
         $selectedProgram,
         $selectedSession,
-        $branch
+        $branch,
+        $userId
     );
 
     // Ensure error iterations always appear
@@ -311,7 +315,7 @@ if ($selectedProgram && $selectedSession) {
                     <?php foreach ($programs as $programId => $programName): ?>
                         <li>
                             <a class="dropdown-item" 
-                                href="?user=<?= urlencode($programId) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
+                                href="?user=<?= urlencode($programId) ?>&from_date=<?= urlencode($fromDate) ?>&to_date=<?= urlencode($toDate) ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?>">
                                 <?= htmlspecialchars($programName) ?>
                             </a>
                         </li>
@@ -344,9 +348,24 @@ if ($selectedProgram && $selectedSession) {
                 onchange="updateDate('to_time', this.value)">
         </div>
     </div>
-    <div class="col-md-4">
-        <label class="form-label">Branch:</label>
-        <input type="text" class="form-control" value="<?= htmlspecialchars($branch) ?>" placeholder="Optional" onchange="updateDate('branch', this.value)">
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Branch:</label>
+            <input type="text"
+                class="form-control"
+                value="<?= htmlspecialchars($branch) ?>"
+                placeholder="Optional"
+                onchange="updateDate('branch', this.value)">
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">User ID:</label>
+            <input type="text"
+                class="form-control"
+                value="<?= htmlspecialchars($userId) ?>"
+                placeholder="Optional"
+                onchange="updateDate('user_id', this.value)">
+        </div>
     </div>
 
     <!-- Session & Iteration Row (only if program selected) -->
@@ -362,7 +381,8 @@ if ($selectedProgram && $selectedSession) {
                 $selectedProgram,
                 $fromDate ? $fromDateTime : null,
                 $toDate   ? $toDateTime   : null,
-                $branch
+                $branch,
+                $userId
             );
         }
         ?>
@@ -379,7 +399,7 @@ if ($selectedProgram && $selectedSession) {
                     ?>
                     <li>
                         <a class="dropdown-item"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($sid) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -399,7 +419,7 @@ if ($selectedProgram && $selectedSession) {
                     <!-- Session Summary Option -->
                     <li>
                         <a class="dropdown-item <?= $selectedIteration === 'summary' ? 'text-primary fw-semibold' : '' ?>"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?>">
 
                             Session Summary
                         </a>
@@ -415,7 +435,7 @@ if ($selectedProgram && $selectedSession) {
                     ?>
                     <li>
                         <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
-                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?>">
+                            href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?>">
                             <?= htmlspecialchars($label) ?>
                         </a>
                     </li>
@@ -521,6 +541,7 @@ function updateDate(type, value) {
     if (type === 'from_time')  params.set('from_time', value);
     if (type === 'to_time')    params.set('to_time', value);
     if (type === 'branch')  params.set('branch', value);
+    if (type === 'user_id')    params.set('user_id', value);
 
     // Preserve context
     if ('<?= $selectedProgram ?>') {
@@ -538,6 +559,10 @@ function updateDate(type, value) {
     // ⚠️ Only preserve existing branch if NOT changing it
     if (type !== 'branch' && '<?= $branch ?>') {
         params.set('branch', '<?= htmlspecialchars($branch) ?>');
+    }
+
+    if (type !== 'user_id' && '<?= $userId ?>') {
+        params.set('user_id', '<?= htmlspecialchars($userId) ?>');
     }
 
     window.location.href = '<?= $_SERVER['PHP_SELF'] ?>?' + params.toString();

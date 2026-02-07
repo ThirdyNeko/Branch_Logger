@@ -21,7 +21,8 @@ function getAllIterations(
     string $session,
     ?string $fromDateTime = null,
     ?string $toDateTime = null,
-    ?string $clientIp = null
+    ?string $clientIp = null,
+    ?string $userId = null
 ): array {
     $params = [
         ':program' => $program,
@@ -38,6 +39,11 @@ function getAllIterations(
     if ($clientIp) {
         $sql .= " AND branch_id = :branch_id";
         $params[':branch_id'] = $clientIp;
+    }
+
+    if ($userId) {
+        $sql .= " AND user_id = :user_id";
+        $params[':user_id'] = $userId;
     }
 
     if ($fromDateTime && $toDateTime) {
@@ -66,7 +72,8 @@ function getErrorIterations(
     PDO $db,
     string $program,
     string $session,
-    ?string $clientIp = null
+    ?string $clientIp = null,
+    ?string $userId = null
 ): array {
     $params = [
         ':program' => $program,
@@ -84,6 +91,11 @@ function getErrorIterations(
     if ($clientIp) {
         $sql .= " AND branch_id = :branch_id";
         $params[':branch_id'] = $clientIp;
+    }
+
+    if ($userId) {
+        $sql .= " AND user_id = :user_id";
+        $params[':user_id'] = $userId;
     }
 
     $stmt = $db->prepare($sql);

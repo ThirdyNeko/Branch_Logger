@@ -168,6 +168,7 @@ function loadLogsForViewer(
     $iteration,                 // int|string ('summary')
     ?string $branchId,
     ?string $userId,
+    ?string $pcName,
     array $filteredRemarked
 ): array {
     if (!$program || !$session) {
@@ -208,6 +209,11 @@ function loadLogsForViewer(
     if (!empty($userId)) {
         $sql .= " AND user_id = :user_id";
         $params[':user_id'] = $userId;
+    }
+
+    if (!empty($pcName)) {
+        $sql .= " AND pc_name = :pc_name";
+        $params[':pc_name'] = $pcName;
     }
 
     $sql .= $iteration === 'summary'

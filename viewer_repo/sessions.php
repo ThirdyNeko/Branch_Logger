@@ -105,7 +105,8 @@ function getSessionsByProgram(
     ?string $fromDateTime = null,
     ?string $toDateTime = null,
     ?string $clientIp = null,
-    ?string $userId = null
+    ?string $userId = null,
+    ?string $pcName = null
 ): array {
     $params = [
         ':program' => $program
@@ -131,6 +132,11 @@ function getSessionsByProgram(
     if ($userId) {
         $sql .= " AND user_id = :user_id";
         $params[':user_id'] = $userId;
+    }
+
+    if ($pcName) {
+        $sql .= " AND pc_name = :pc_name";
+        $params[':pc_name'] = $pcName;
     }
 
     $sql .= " ORDER BY session_id ASC";

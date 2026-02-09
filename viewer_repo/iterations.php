@@ -22,7 +22,8 @@ function getAllIterations(
     ?string $fromDateTime = null,
     ?string $toDateTime = null,
     ?string $clientIp = null,
-    ?string $userId = null
+    ?string $userId = null,
+    ?string $pcName = null
 ): array {
     $params = [
         ':program' => $program,
@@ -44,6 +45,11 @@ function getAllIterations(
     if ($userId) {
         $sql .= " AND user_id = :user_id";
         $params[':user_id'] = $userId;
+    }
+
+    if ($pcName) {
+        $sql .= " AND pc_name = :pc_name";
+        $params[':pc_name'] = $pcName;
     }
 
     if ($fromDateTime && $toDateTime) {
@@ -73,7 +79,8 @@ function getErrorIterations(
     string $program,
     string $session,
     ?string $clientIp = null,
-    ?string $userId = null
+    ?string $userId = null,
+    ?string $pcName = null
 ): array {
     $params = [
         ':program' => $program,
@@ -96,6 +103,11 @@ function getErrorIterations(
     if ($userId) {
         $sql .= " AND user_id = :user_id";
         $params[':user_id'] = $userId;
+    }
+
+    if ($pcName) {
+        $sql .= " AND pc_name = :pc_name";
+        $params[':pc_name'] = $pcName;
     }
 
     $stmt = $db->prepare($sql);

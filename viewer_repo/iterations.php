@@ -21,9 +21,9 @@ function getAllIterations(
     string $session,
     ?string $fromDateTime = null,
     ?string $toDateTime = null,
-    ?string $clientIp = null,
+    ?string $branchID = null,
     ?string $userId = null,
-    ?string $pcName = null
+    ?string $clientIP = null
 ): array {
     $params = [
         ':program' => $program,
@@ -37,9 +37,9 @@ function getAllIterations(
           AND session_id = :session
     ";
 
-    if ($clientIp) {
+    if ($branchID) {
         $sql .= " AND branch_id = :branch_id";
-        $params[':branch_id'] = $clientIp;
+        $params[':branch_id'] = $branchID;
     }
 
     if ($userId) {
@@ -47,9 +47,9 @@ function getAllIterations(
         $params[':user_id'] = $userId;
     }
 
-    if ($pcName) {
-        $sql .= " AND pc_name = :pc_name";
-        $params[':pc_name'] = $pcName;
+    if ($clientIP) {
+        $sql .= " AND client_ip = :client_ip";
+        $params[':client_ip'] = $clientIP;
     }
 
     if ($fromDateTime && $toDateTime) {
@@ -78,9 +78,9 @@ function getErrorIterations(
     PDO $db,
     string $program,
     string $session,
-    ?string $clientIp = null,
+    ?string $branchID = null,
     ?string $userId = null,
-    ?string $pcName = null
+    ?string $clientIP = null
 ): array {
     $params = [
         ':program' => $program,
@@ -95,9 +95,9 @@ function getErrorIterations(
           AND type IN ('backend-error', 'backend-fatal')
     ";
 
-    if ($clientIp) {
+    if ($branchID) {
         $sql .= " AND branch_id = :branch_id";
-        $params[':branch_id'] = $clientIp;
+        $params[':branch_id'] = $branchID;
     }
 
     if ($userId) {
@@ -105,9 +105,9 @@ function getErrorIterations(
         $params[':user_id'] = $userId;
     }
 
-    if ($pcName) {
-        $sql .= " AND pc_name = :pc_name";
-        $params[':pc_name'] = $pcName;
+    if ($clientIP) {
+        $sql .= " AND client_ip = :client_ip";
+        $params[':client_ip'] = $clientIP;
     }
 
     $stmt = $db->prepare($sql);

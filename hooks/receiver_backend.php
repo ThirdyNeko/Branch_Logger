@@ -17,10 +17,9 @@ if (!$data || empty($data['timestamp'])) {
     exit;
 }
 
-
-$device_name  = $data['device_name'] ?? 'guest';
+$client_ip = $data['client_ip'] ?? qa_get_client_ip();
+$device_name  = gethostbyaddr($client_ip) ?: $client_ip;
 $user_id = $device_name;
-
 
 $GLOBALS['__QA_USER_ID__']  = $user_id;
 $GLOBALS['__QA_PROGRAM__'] = $data['program_name'] ?? '';
@@ -39,8 +38,6 @@ if ($iteration === null) {
 // Fetch session state to get session_id
 $state = qa_get_session_state();
 $session_id = $state['session_id'];
-$client_ip = $data['client_ip'] ?? qa_get_client_ip();
-$pc_name = gethostbyaddr($client_ip) ?: $client_ip;
 $branch = getBranchByIp($client_ip) ?? "Guest";
 
 
@@ -60,7 +57,7 @@ $logData = [
     'request_body'  => isset($data['request']) ? json_encode($data['request']) : null,
     'response_body' => isset($data['response']) ? json_encode($data['response']) : null,
     'status_code'   => $data['status'] ?? 200,
-    'pc_name'      => $pc_name
+    'client_ip'      => $client_ip
 ];
 
 /* ==========================

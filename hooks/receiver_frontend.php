@@ -33,7 +33,8 @@ if (!$data || empty($data['timestamp'])) {
     exit;
 }
 
-$device_name  = qa_get_client_ip();
+$client_ip = $data['client_ip'] ?? qa_get_client_ip();
+$device_name  = gethostbyaddr($client_ip) ?: $client_ip;
 $user_id = $device_name;
 
 $GLOBALS['__QA_USER_ID__']  = $user_id;
@@ -61,9 +62,7 @@ if (($data['type'] ?? '') === 'frontend-ui' || isset($data['ui_type'])) {
     $data['type'] = 'frontend-io';
     $data['response'] = $data['message'] ?? '[UI message]';
 }
-$client_ip = $data['client_ip'] ?? qa_get_client_ip();
 $branch = getBranchByIp($client_ip) ?? "Guest";
-$pc_name = gethostbyaddr($client_ip) ?: $client_ip;
 
 /* ==========================
    Extract log data
@@ -81,7 +80,7 @@ $logData = [
     'request_body'  => isset($data['request']) ? json_encode($data['request']) : null,
     'response_body' => isset($data['response']) ? json_encode($data['response']) : null,
     'status_code'   => $data['status'] ?? 200,
-    'pc_name'      => $pc_name
+    'client_ip'      => $client_ip
 ];
 
 /* ==========================

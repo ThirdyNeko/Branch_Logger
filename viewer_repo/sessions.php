@@ -104,9 +104,9 @@ function getSessionsByProgram(
     string $program,
     ?string $fromDateTime = null,
     ?string $toDateTime = null,
-    ?string $clientIp = null,
+    ?string $branchID = null,
     ?string $userId = null,
-    ?string $pcName = null
+    ?string $clientIP = null
 ): array {
     $params = [
         ':program' => $program
@@ -124,9 +124,9 @@ function getSessionsByProgram(
         $params[':to_dt']   = $toDateTime;
     }
 
-    if ($clientIp) {
+    if ($branchID) {
         $sql .= " AND branch_id = :branch_id";
-        $params[':branch_id'] = $clientIp;
+        $params[':branch_id'] = $branchID;
     }
 
     if ($userId) {
@@ -134,9 +134,9 @@ function getSessionsByProgram(
         $params[':user_id'] = $userId;
     }
 
-    if ($pcName) {
-        $sql .= " AND pc_name = :pc_name";
-        $params[':pc_name'] = $pcName;
+    if ($clientIP) {
+        $sql .= " AND client_ip = :client_ip";
+        $params[':client_ip'] = $clientIP;
     }
 
     $sql .= " ORDER BY session_id ASC";

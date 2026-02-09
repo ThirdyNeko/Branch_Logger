@@ -14,7 +14,7 @@ class QaLogRepository
     {
         $sql = "
             INSERT INTO qa_logs
-            (user_id, session_id, iteration, device_name, program_name, branch_id, type, endpoint, method, request_body, response_body, status_code, created_at, pc_name)
+            (user_id, session_id, iteration, device_name, program_name, branch_id, type, endpoint, method, request_body, response_body, status_code, created_at, client_ip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), ?)
         ";
 
@@ -32,7 +32,7 @@ class QaLogRepository
             $data['request_body'],
             $data['response_body'],
             $data['status_code'],
-            $data['pc_name']
+            $data['client_ip'] // Using client_ip as pc_name for better traceability
         ]);
     }
     

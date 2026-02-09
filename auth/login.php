@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
         <div class="card-body">
 
-            <h3 class="text-center mb-4">QA Logger</h3>
+            <h3 class="text-center mb-4">Branch Logger</h3>
 
             <?php if ($error): ?>
                 <div class="alert alert-danger">

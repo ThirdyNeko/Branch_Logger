@@ -432,7 +432,7 @@ if ($selectedProgram && $selectedSession) {
                 <ul class="dropdown-menu dropdown-menu-scroll w-100" aria-labelledby="iterationDropdown">
                     <!-- Session Summary Option -->
                     <li>
-                        <a class="dropdown-item <?= $selectedIteration === 'summary' ? 'text-primary fw-semibold' : '' ?>"
+                        <a class="dropdown-item"
                             href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?> <?= $clientIP ? '&client_ip=' . urlencode($clientIP) : '' ?>">
 
                             Session Summary

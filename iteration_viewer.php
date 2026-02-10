@@ -217,20 +217,20 @@ if ($selectedProgram && $selectedSession) {
         $db,
         $selectedProgram,
         $selectedSession,
-        $fromDateTime,
-        $toDateTime,
-        $branch,
-        $userId,
-        $clientIP
+        null,
+        null,
+        null,       // branch
+        null,       // userId
+        null,       // clientIP
     );
 
     $errorIterations = getErrorIterations(
         $db,
         $selectedProgram,
         $selectedSession,
-        $branch,
-        $userId,
-        $clientIP
+        null,       // branch
+        null,       // userId
+        null,       // clientIP
     );
 
     // Ensure error iterations always appear
@@ -306,7 +306,7 @@ if ($selectedProgram && $selectedSession) {
                             <!-- Session Summary Option -->
                             <li>
                                 <a class="dropdown-item"
-                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?> <?= $clientIP ? '&client_ip=' . urlencode($clientIP) : '' ?>">
+                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>">
 
                                     Session Summary
                                 </a>
@@ -322,7 +322,7 @@ if ($selectedProgram && $selectedSession) {
                             ?>
                             <li>
                                 <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
-                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>&from_date=<?= urlencode($fromDate ?? '') ?>&to_date=<?= urlencode($toDate ?? '') ?>&from_time=<?= urlencode($fromTime ?? '') ?>&to_time=<?= urlencode($toTime ?? '') ?><?= $branch ? '&branch=' . urlencode($branch) : '' ?><?= $userId ? '&user_id=' . urlencode($userId) : '' ?><?= $clientIP ? '&client_ip=' . urlencode($clientIP) : '' ?>">
+                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>">
                                     <?= htmlspecialchars($label) ?>
                                 </a>
                             </li>

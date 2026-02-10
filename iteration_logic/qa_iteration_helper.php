@@ -34,7 +34,7 @@ function qa_generate_next_session_id(string $program, string $userId): string
 {
     $repo = new QaSessionRepository(qa_db());
     $count = $repo->countSessionsForProgram($program);
-    return $program . '_Test_' . ($count + 1);
+    return $program . '_Session_' . ($count + 1);
 }
 
 function qa_get_session_state(): array

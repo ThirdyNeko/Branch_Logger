@@ -4,7 +4,6 @@ session_name('QA_LOGGER_SESSION');
 require_once __DIR__ . '/auth/require_login.php';
 date_default_timezone_set('Asia/Manila');
 require_once __DIR__ . '/iteration_logic/qa_iteration_helper.php';
-require_once __DIR__ . '/iteration_logic/qa_iteration_helper.php';
 require_once __DIR__ . '/viewer_repo/sessions.php';
 require_once __DIR__ . '/viewer_repo/users.php';
 require_once __DIR__ . '/viewer_repo/remarks.php';

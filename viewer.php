@@ -53,19 +53,31 @@ if ($fromDate) {
 if ($toDate) {
     $toDateTime = $toDate . ' ' . ($toTime ?: '23:59:59');
 }
-
 /* ==========================
-   LOAD SESSION NAMES
+   DETERMINE CURRENT PAGE
 ========================== */
-$sessionNames = loadSessionNamesForViewer(
+
+$perPage = 50;
+$page = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $perPage;
+
+$result = loadSessionNamesForViewer(
     $db,
-    $selectedProgram ?: null,  // null = all programs
+    $selectedProgram ?: null,
     $fromDate ? $fromDateTime : null,
     $toDate   ? $toDateTime   : null,
     $branch ?: null,
     $userId ?: null,
-    $clientIP ?: null
+    $clientIP ?: null,
+    $perPage,
+    $offset
 );
+
+$sessionNames = $result['sessions'];
+$totalSessions = $result['total'];
+$baseQuery = $result['baseQuery'];
+
+$totalPages = ceil($totalSessions / $perPage);
 
 /* ==========================
    PROGRAM LIST (FROM LOGS)
@@ -207,6 +219,44 @@ $programs = loadPrograms($db);
                     <?php endif; ?>
                     </tbody>
                 </table>
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+                <?php
+                // Build base query preserving filters
+                $baseFilters = [
+                    'user'      => $selectedProgram,
+                    'from_date' => $fromDate ?? '',
+                    'from_time' => $fromTime ?? '',
+                    'to_date'   => $toDate ?? '',
+                    'to_time'   => $toTime ?? '',
+                    'branch'    => $branch ?? '',
+                    'user_id'   => $userId ?? '',
+                    'client_ip' => $clientIP ?? ''
+                ];
+                $baseQuery = http_build_query($baseFilters);
+                ?>
+                <nav aria-label="Sessions pagination" class="mt-3">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Previous button -->
+                        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $page - 1 ?>" tabindex="-1">Previous</a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <?php for ($p = 1; $p <= $totalPages; $p++): ?>
+                            <li class="page-item <?= $p === $page ? 'active' : '' ?>">
+                                <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $p ?>"><?= $p ?></a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <!-- Next button -->
+                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $page + 1 ?>">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                <?php endif; ?>
             </div>
         </div>
     </main>

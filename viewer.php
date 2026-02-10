@@ -107,32 +107,33 @@ $programs = loadPrograms($db);
 </head>
 <body>
 
-<div class="d-flex">
+<div class="d-flex vh-100">
 
     <!-- =====================
          SIDEBAR
     ====================== -->
-    <aside class="sidebar border-end p-3">
-        <div class="user-box">
-            <div class="fw-bold text-center text-uppercase ">
+    <aside class="sidebar d-flex flex-column border-end p-3" style="height: 100vh;">
+        <div class="user-box mb-3">
+            <div class="fw-bold text-center text-uppercase">
                 Hello <?= htmlspecialchars($_SESSION['user']['username']) ?>
             </div>
         </div>
 
+        <!-- Top buttons -->
         <div class="d-grid gap-2">
-            <a href="profile.php" class="btn btn-outline-dark btn-sm">
-                Profile
-            </a>
-            <a href="logout.php" class="btn btn-outline-dark btn-sm">
-                Logout
-            </a>
+            <a href="profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
+        </div>
+
+        <!-- Spacer pushes logout to the bottom -->
+        <div class="mt-auto">
+            <a href="auth/logger_logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
         </div>
     </aside>
 
     <!-- =====================
          MAIN CONTENT
     ====================== -->
-    <main class="flex-fill p-4">
+    <main class="flex-fill p-4 overflow-auto" style="height:100%;">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">Sessions</h4>
@@ -183,7 +184,7 @@ $programs = loadPrograms($db);
                     <?php if (!empty($sessionNames)): ?>
                         <?php foreach ($sessionNames as $session): ?>
                             <tr class="clickable-row"
-                                onclick="window.location='session_view.php?user=<?= urlencode($session['program_name'] ?? '-') ?>&session=<?= urlencode($session['session_id']) ?>'">
+                                onclick="window.location='iteration_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
                                 <td><?= htmlspecialchars($session['program_name'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($session['session_id']) ?></td>
                                 <td><?= htmlspecialchars($session['branch_id'] ?? '-') ?></td>
@@ -222,7 +223,7 @@ $programs = loadPrograms($db);
             <div class="modal-body row g-3">
 
                 <div class="col-md-6">
-                    <label class="form-label">Program (User)</label>
+                    <label class="form-label">Program</label>
                     <input type="text" name="user" class="form-control"
                            value="<?= htmlspecialchars($selectedProgram) ?>">
                 </div>
@@ -270,8 +271,11 @@ $programs = loadPrograms($db);
                 </div>
 
             </div>
-
+            
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="window.location='viewer.php'">
+                    Clear Filters
+                </button>
                 <button type="submit" class="btn btn-primary">
                     Apply Filters
                 </button>

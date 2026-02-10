@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 🔁 ROLE-BASED REDIRECT
         switch ($user['role']) {
             case 'developer':
-                header('Location: ../viewer.php');
+                header('Location: ../index.php');
                 break;
     
             case 'admin':

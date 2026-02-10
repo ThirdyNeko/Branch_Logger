@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    Role-based redirect
 -------------------------------------------------- */
 $redirectUrl = match($_SESSION['user']['role'] ?? '') {
-    'developer' => 'viewer.php',
+    'developer' => 'index.php',
     default     => 'login.php'
 };
 ?>

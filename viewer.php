@@ -166,7 +166,7 @@ $programs = loadPrograms($db);
         </div>
 
         <!-- =====================
-             SESSIONS TABLE
+            SESSIONS TABLE
         ====================== -->
         <div class="card">
             <div class="card-body p-0">
@@ -178,6 +178,7 @@ $programs = loadPrograms($db);
                             <th>Branch</th>
                             <th>User ID</th>
                             <th>Client IP</th>
+                            <th>Last Updated</th> <!-- New column -->
                         </tr>
                     </thead>
                     <tbody>
@@ -190,11 +191,16 @@ $programs = loadPrograms($db);
                                 <td><?= htmlspecialchars($session['branch_id'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($session['user_id'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($session['client_ip'] ?? '-') ?></td>
+                                <td>
+                                    <?= !empty($session['last_updated'])
+                                        ? date('Y-m-d H:i:s', strtotime($session['last_updated']))
+                                        : '-' ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="5" class="text-center text-muted p-4">
+                            <td colspan="6" class="text-center text-muted p-4">
                                 No sessions found
                             </td>
                         </tr>
@@ -203,7 +209,6 @@ $programs = loadPrograms($db);
                 </table>
             </div>
         </div>
-
     </main>
 </div>
 

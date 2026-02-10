@@ -21,7 +21,8 @@ function loadSessionNamesForViewer(
             MAX(branch_id) AS branch_id,
             MAX(user_id)   AS user_id,
             MAX(client_ip) AS client_ip,
-            MIN(created_at) AS started_at
+            MIN(created_at) AS started_at,
+            MAX(created_at) AS last_updated
         FROM qa_logs
         WHERE 1=1
     ";
@@ -60,7 +61,7 @@ function loadSessionNamesForViewer(
 
     $sql .= "
         GROUP BY session_id, program_name
-        ORDER BY started_at DESC
+        ORDER BY last_updated DESC
     ";
 
     $stmt = $db->prepare($sql);

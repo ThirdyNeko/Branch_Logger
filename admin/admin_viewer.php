@@ -282,7 +282,7 @@ if ($selectedProgram && $selectedSession) {
 
         <!-- Spacer pushes logout to the bottom -->
         <div class="mt-auto">
-            <a href="auth/logger_logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
+            <a href="../auth/logger_logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
         </div>
     </aside>
 

@@ -328,7 +328,7 @@ $programs = loadPrograms($db);
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" onclick="window.location='viewer.php'">
+                <button type="button" class="btn btn-danger" onclick="window.location='index.php'">
                     Clear Filters
                 </button>
                 <button type="submit" class="btn btn-primary">

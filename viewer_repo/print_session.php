@@ -156,50 +156,50 @@ function render_log_entry(array $log): string
 
     return $html;
 }
-/* ==========================
-   ITERATION LIST FOR SELECTED SESSION
-========================== */
-$iterations = [];
-if ($selectedSession && isset($filteredRemarked[$selectedSession])) {
-    // Include iterations with remarks
-    $iterations = array_keys($filteredRemarked[$selectedSession]);
-}
+// /* ==========================
+//    ITERATION LIST FOR SELECTED SESSION
+// ========================== */
+// $iterations = [];
+// if ($selectedSession && isset($filteredRemarked[$selectedSession])) {
+//     // Include iterations with remarks
+//     $iterations = array_keys($filteredRemarked[$selectedSession]);
+// }
 
-/* ==========================
-   ITERATIONS WITH ERRORS
-========================== */
-$iterations = [];
+// /* ==========================
+//    ITERATIONS WITH ERRORS
+// ========================== */
+// $iterations = [];
 
-if ($selectedProgram && $selectedSession) {
-    $iterations = getAllIterations(
-        $db,
-        $selectedProgram,
-        $selectedSession,
-        null,
-        null,
-        null,       // branch
-        null,       // userId
-        null,       // clientIP
-    );
+// if ($selectedProgram && $selectedSession) {
+//     $iterations = getAllIterations(
+//         $db,
+//         $selectedProgram,
+//         $selectedSession,
+//         null,
+//         null,
+//         null,       // branch
+//         null,       // userId
+//         null,       // clientIP
+//     );
 
-    $errorIterations = getErrorIterations(
-        $db,
-        $selectedProgram,
-        $selectedSession,
-        null,       // branch
-        null,       // userId
-        null,       // clientIP
-    );
+//     $errorIterations = getErrorIterations(
+//         $db,
+//         $selectedProgram,
+//         $selectedSession,
+//         null,       // branch
+//         null,       // userId
+//         null,       // clientIP
+//     );
 
-    // Ensure error iterations always appear
-    foreach ($errorIterations as $iter => $_) {
-        if (!in_array($iter, $iterations, true)) {
-            $iterations[] = $iter;
-        }
-    }
+//     // Ensure error iterations always appear
+//     foreach ($errorIterations as $iter => $_) {
+//         if (!in_array($iter, $iterations, true)) {
+//             $iterations[] = $iter;
+//         }
+//     }
 
-    sort($iterations);
-}
+//     sort($iterations);
+// }
 
 // If you need remarks:
 $filteredRemarked = []; // load your remark array here if needed

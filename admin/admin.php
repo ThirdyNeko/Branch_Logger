@@ -191,6 +191,7 @@ $programs = loadPrograms($db);
                             <th>User ID</th>
                             <th>Client IP</th>
                             <th>Last Updated</th> <!-- New column -->
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -207,6 +208,15 @@ $programs = loadPrograms($db);
                                     <?= !empty($session['last_updated'])
                                         ? date('Y-m-d H:i:s', strtotime($session['last_updated']))
                                         : '-' ?>
+                                </td>
+
+                                <!-- Print Icon -->
+                                <td onclick="event.stopPropagation();">
+                                    <a href="../viewer_repo/print_session.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>&iteration=summary"
+                                    target="_blank"
+                                    class="text-decoration-none">
+                                        <i class="bi bi-printer"></i>
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

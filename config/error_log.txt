@@ -1253,3 +1253,5 @@
 [2026-02-10 11:24:13] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 325
 [2026-02-10 11:24:13] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 325
 [2026-02-10 11:24:13] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 325
+[2026-02-12 15:01:18] Error: [2] Undefined variable $selectedSession in C:\xampp\htdocs\branch_logger\viewer_repo\print_session.php on line 163
+[2026-02-12 15:01:18] Error: [2] Undefined variable $selectedProgram in C:\xampp\htdocs\branch_logger\viewer_repo\print_session.php on line 173

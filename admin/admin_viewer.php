@@ -276,7 +276,7 @@ if ($selectedProgram && $selectedSession) {
         <div class="d-grid gap-2">
             <a href="admin.php" class="btn btn-primary btn-sm">Back to Dashboard</a>
             <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
-                Print Logs
+                Print Iteration
             </button>
         </div>
 

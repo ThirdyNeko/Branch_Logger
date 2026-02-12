@@ -134,6 +134,9 @@ $programs = loadPrograms($db);
         <!-- Top buttons -->
         <div class="d-grid gap-2">
             <a href="create_user.php" class="btn btn-outline-dark btn-sm">Create User</a>
+            <button onclick="" class="btn btn-outline-danger btn-sm">
+                Archive Logs
+            </button>
         </div>
 
         <!-- Spacer pushes logout to the bottom -->

@@ -275,6 +275,9 @@ if ($selectedProgram && $selectedSession) {
         <!-- Top buttons -->
         <div class="d-grid gap-2">
             <a href="admin.php" class="btn btn-primary btn-sm">Back to Dashboard</a>
+            <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
+                Print Logs
+            </button>
         </div>
 
         <!-- Spacer pushes logout to the bottom -->
@@ -332,6 +335,7 @@ if ($selectedProgram && $selectedSession) {
         </div>
 
         <!-- Logs -->
+        <div id="print-area">
         <?php if (!empty($logsToShow)): ?>
             <?php
             $remarkName = $logsToShow[0]['_remark_name'] ?? '';
@@ -408,12 +412,26 @@ if ($selectedProgram && $selectedSession) {
             }
             ?>
         <?php endif; ?>
+        </div>
 
     </main>
 </div>
 
 <!-- Bootstrap JS -->
 <script src="../scripts/bootstrap.bundle.min.js"></script>
+
+<script>
+function printLogs() {
+    const printContents = document.getElementById('print-area').innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    location.reload();
+}
+</script>
+
 
 </body>
 </html>

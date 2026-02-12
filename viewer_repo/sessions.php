@@ -34,18 +34,18 @@ function loadSessionNamesForViewer(
     }
 
     if ($branch) {
-        $where .= " AND branch_id = :branch_id ";
-        $params[':branch_id'] = $branch;
+        $where .= " AND branch_id LIKE :branch_id ";
+        $params[':branch_id'] = '%' . $branch . '%';
     }
 
     if ($userId) {
-        $where .= " AND user_id = :userId ";
-        $params[':userId'] = $userId;
+        $where .= " AND user_id LIKE :userId ";
+        $params[':userId'] = '%' . $userId . '%';
     }
 
     if ($clientIP) {
-        $where .= " AND client_ip = :clientIP ";
-        $params[':clientIP'] = $clientIP;
+        $where .= " AND client_ip LIKE :clientIP ";
+        $params[':clientIP'] = '%' . $clientIP . '%';
     }
 
     // Total sessions for pagination

@@ -197,7 +197,7 @@ $programs = loadPrograms($db);
                     <?php if (!empty($sessionNames)): ?>
                         <?php foreach ($sessionNames as $session): ?>
                             <tr class="clickable-row"
-                                onclick="window.location='iteration_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
+                                onclick="window.location='admin_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
                                 <td><?= htmlspecialchars($session['program_name'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($session['session_id']) ?></td>
                                 <td><?= htmlspecialchars($session['branch_id'] ?? '-') ?></td>

@@ -1257,3 +1257,8 @@
 [2026-02-12 15:01:18] Error: [2] Undefined variable $selectedProgram in C:\xampp\htdocs\branch_logger\viewer_repo\print_session.php on line 173
 [2026-02-12 15:03:42] Error: [2] Undefined variable $selectedSession in C:\xampp\htdocs\branch_logger\viewer_repo\print_session.php on line 163
 [2026-02-12 15:03:42] Error: [2] Undefined variable $selectedProgram in C:\xampp\htdocs\branch_logger\viewer_repo\print_session.php on line 173
+[2026-02-13 08:58:33] Error: [2] Undefined array key "role" in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
+[2026-02-13 08:59:45] Error: [2] Undefined array key "role" in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
+[2026-02-13 09:02:16] Error: [2] Undefined array key "user" in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
+[2026-02-13 09:02:16] Error: [2] Trying to access array offset on value of type null in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
+[2026-02-13 09:02:42] Error: [2] Undefined variable $db in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 14

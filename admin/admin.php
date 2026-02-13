@@ -339,7 +339,7 @@ $programs = loadPrograms($db);
                 </div>
 
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" onclick="window.location='admin.php'">
                     Clear Filters

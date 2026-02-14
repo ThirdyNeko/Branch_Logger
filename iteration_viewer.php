@@ -5,6 +5,7 @@ require_once __DIR__ . '/auth/require_login.php';
 date_default_timezone_set('Asia/Manila');
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/repo/user_repo.php';
+require_once __DIR__ . '/viewer_repo/remarks.php';
 require_once __DIR__ . '/viewer_repo/logs.php';
 require_once __DIR__ . '/viewer_repo/iterations.php';
 require_once __DIR__ . '/viewer_repo/programs.php';
@@ -32,6 +33,34 @@ $db = qa_db();
 $selectedProgram   = $_GET['user'] ?? '';
 $selectedSession   = $_GET['session'] ?? '';
 $selectedIteration = $_GET['iteration'] ?? '';
+
+/* ==========================
+   HANDLE REMARK RESOLUTION
+========================== */
+
+if (isset($_POST['mark_resolved'])) {
+    $program   = $_POST['program'];
+    $session   = $_POST['session'];
+    $iteration = (int)$_POST['iteration'];
+
+    // Update the resolved field
+    $stmt = $db->prepare("
+        UPDATE qa_remarks
+        SET resolved = 1
+        WHERE program_name = :program
+          AND session_id = :session
+          AND iteration = :iteration
+    ");
+    $stmt->execute([
+        ':program'   => $program,
+        ':session'   => $session,
+        ':iteration' => $iteration
+    ]);
+
+    // Reload page to reflect change
+    header("Location: " . $_SERVER['REQUEST_URI']);
+    exit;
+}
 
 /* ==========================
    LOAD ITERATIONS
@@ -198,6 +227,19 @@ function render_log_entry(array $log): string
 
     return $html;
 }
+
+/* ==========================
+   LOAD REMARKS
+========================== */
+$filteredRemarked = [];
+
+if ($selectedProgram && $selectedSession) {
+    $filteredRemarked = loadRemarksByProgram(
+        $db,
+        $selectedProgram,
+        $selectedSession
+    );
+}
 /* ==========================
    ITERATION LIST FOR SELECTED SESSION
 ========================== */
@@ -359,97 +401,127 @@ if ($selectedProgram && $selectedSession) {
             </form>
         </div>
 
+        <?php
+                $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
+                $hasRemark  = !empty($remarkData['remark']);
+                $isResolved = $remarkData['resolved'] ?? false;
+            ?>
+
+            <?php if ($hasRemark && !$isResolved): ?>
+                <form method="POST" class="mb-2 text-center">
+                    <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
+                    <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
+                    <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
+                    <input type="hidden" name="mark_resolved" value="1">
+
+                    <button type="submit" class="btn btn-success w-100 py-2">
+                        ✅ Mark Remark as Resolved
+                    </button>
+                </form>
+            <?php elseif ($hasRemark && $isResolved): ?>
+                <div class="card p-2 mb-2 text-center">
+                    <span class="badge bg-success w-100 py-2">
+                        ✅ Remark Resolved
+                    </span>
+                </div>
+            <?php endif; ?>
+
         <!-- Logs -->
         <div id="print-area">
 
-        <div class="print-header d-none">
-            <h4 class="mb-1">QA Logger Report</h4>
-            <div class="small">
-                Program: <?= htmlspecialchars($selectedProgram ?? '-') ?><br>
-                Session: <?= htmlspecialchars($selectedSession ?? '-') ?><br>
-                Activity Log: <?= htmlspecialchars($selectedIteration ?? '-') ?><br>
-                Printed by: <?= htmlspecialchars($_SESSION['user']['username']) ?><br>
-                Printed at: <?= date('Y-m-d H:i:s') ?>
+            <div class="print-header d-none">
+                <h4 class="mb-1">QA Logger Report</h4>
+                <div class="small">
+                    Program: <?= htmlspecialchars($selectedProgram ?? '-') ?><br>
+                    Session: <?= htmlspecialchars($selectedSession ?? '-') ?><br>
+                    Activity Log: <?= htmlspecialchars($selectedIteration ?? '-') ?><br>
+                    Printed by: <?= htmlspecialchars($_SESSION['user']['username']) ?><br>
+                    Printed at: <?= date('Y-m-d H:i:s') ?>
+                </div>
+                <hr>
             </div>
-            <hr>
-        </div>
 
-        <?php if (!empty($logsToShow)): ?>
-            <?php
-            $remarkName = $logsToShow[0]['_remark_name'] ?? '';
-            $remarkText = $logsToShow[0]['_remark_text'] ?? '';
-            $remarkUser = $filteredRemarked[$selectedSession][$selectedIteration]['username'] ?? 'Unknown';
-            ?>
-            <?php if ($remarkName || $remarkText): ?>
-                <div class="card log-card bg-primary-subtle border-primary p-3 mb-2">
-                    <strong>Remark Name:</strong> <?= htmlspecialchars($remarkName) ?><br>
-                    <small>By: <?= htmlspecialchars($remarkUser) ?></small>
-                </div>
-            <?php endif; ?>
-            <?php if ($remarkText): ?>
-                <div class="card log-card bg-light p-3 mb-2">
-                    <strong>Remark:</strong><br>
-                    <?= nl2br(htmlspecialchars($remarkText)) ?>
-                </div>
-            <?php endif; ?>
+            <?php if (!empty($logsToShow) || !empty($filteredRemarked)) : ?>
 
-            <?php
-            if ($selectedIteration === 'summary') {
-                // Group logs by iteration
-                $logsByIteration = [];
+                <?php
+                // Single iteration remark info
+                $remarkEntry = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
+                $remarkName = $remarkEntry['name'] ?? '';
+                $remarkText = $remarkEntry['remark'] ?? '';
+                $remarkUser = $remarkEntry['username'] ?? 'Unknown';
+                ?>
 
-                foreach ($logsToShow as $log) {
-                    $iter = $log['iteration'] ?? 0;
+                <?php if ($remarkName || $remarkText) : ?>
+                    <div class="card log-card bg-primary-subtle border-primary p-3 mb-2">
+                        <strong>Remark Name:</strong> <?= htmlspecialchars($remarkName) ?><br>
+                        <small>By: <?= htmlspecialchars($remarkUser) ?></small>
+                    </div>
+                <?php endif; ?>
 
-                    // Only include if it's an error
-                    if (!is_error_log($log)) continue;
+                <?php if ($remarkText) : ?>
+                    <div class="card log-card bg-light p-3 mb-2">
+                        <strong>Remark:</strong><br>
+                        <?= nl2br(htmlspecialchars($remarkText)) ?>
+                    </div>
+                <?php endif; ?>
 
-                    if (!isset($logsByIteration[$iter])) $logsByIteration[$iter] = [];
-                    $logsByIteration[$iter][] = $log;
-                }
+                <?php
+                if ($selectedIteration === 'summary') :
 
-                // Add iterations that have remarks but no errors
-                foreach ($filteredRemarked[$selectedSession] ?? [] as $iter => $remark) {
-                    if (!isset($logsByIteration[$iter])) {
-                        $logsByIteration[$iter] = [];
+                    $logsByIteration = [];
+
+                    foreach ($logsToShow as $log) {
+                        $iter = $log['iteration'] ?? 0;
+                        if (!is_error_log($log)) continue;
+
+                        if (!isset($logsByIteration[$iter])) $logsByIteration[$iter] = [];
+                        $logsByIteration[$iter][] = $log;
                     }
-                }
 
-                // Render each iteration
-                foreach ($logsByIteration as $iter => $logs) {
-                    echo '<h5 class="mt-3">Activity Log ' . htmlspecialchars($iter) . '</h5>';
-
-                    // Show remark if exists
-                    $remarkEntry = $filteredRemarked[$selectedSession][$iter] ?? null;
-                    if ($remarkEntry) {
-                        echo '<div class="card log-card bg-primary-subtle border-primary p-3 mb-2">';
-                        echo '<strong>Remark Name:</strong> ' . htmlspecialchars($remarkEntry['name']) . '<br>';
-                        echo '<small>By: ' . htmlspecialchars($remarkEntry['username'] ?? 'Unknown') . '</small>';
-                        echo '</div>';
-
-                        if (!empty($remarkEntry['remark'])) {
-                            echo '<div class="card log-card bg-light p-3 mb-2">';
-                            echo '<strong>Remark:</strong><br>' . nl2br(htmlspecialchars($remarkEntry['remark']));
-                            echo '</div>';
+                    // Include remark-only iterations
+                    foreach ($filteredRemarked[$selectedSession] ?? [] as $iter => $remark) {
+                        if (!isset($logsByIteration[$iter])) {
+                            $logsByIteration[$iter] = [];
                         }
                     }
 
-                    // Show errors
-                    $logsToRender = group_error_logs($logs);
+                    foreach ($logsByIteration as $iter => $logs) :
+
+                        echo '<h5 class="mt-3">Activity Log ' . htmlspecialchars($iter) . '</h5>';
+
+                        $remarkEntry = $filteredRemarked[$selectedSession][$iter] ?? null;
+
+                        if ($remarkEntry) :
+                            echo '<div class="card bg-primary-subtle border-primary p-3 mb-2">';
+                            echo '<strong>Remark Name:</strong> ' . htmlspecialchars($remarkEntry['name']) . '<br>';
+                            echo '<small>By: ' . htmlspecialchars($remarkEntry['username'] ?? 'Unknown') . '</small>';
+                            echo '</div>';
+
+                            if (!empty($remarkEntry['remark'])) :
+                                echo '<div class="card bg-light p-3 mb-2">';
+                                echo '<strong>Remark:</strong><br>' . nl2br(htmlspecialchars($remarkEntry['remark']));
+                                echo '</div>';
+                            endif;
+                        endif;
+
+                        $logsToRender = group_error_logs($logs);
+                        foreach ($logsToRender as $log) {
+                            echo render_log_entry($log);
+                        }
+
+                    endforeach;
+
+                else :  // SINGLE ITERATION
+
+                    $logsToRender = group_error_logs($logsToShow);
                     foreach ($logsToRender as $log) {
                         echo render_log_entry($log);
                     }
-                }
 
-            } else {
-                // Single iteration view
-                $logsToRender = group_error_logs($logsToShow);
-                foreach ($logsToRender as $log) {
-                    echo render_log_entry($log);
-                }
-            }
-            ?>
-        <?php endif; ?>
+                endif; ?>
+                
+            <?php endif; ?>
+
         </div>
     </main>
 </div>

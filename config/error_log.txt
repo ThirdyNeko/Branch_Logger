@@ -1262,3 +1262,7 @@
 [2026-02-13 09:02:16] Error: [2] Undefined array key "user" in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
 [2026-02-13 09:02:16] Error: [2] Trying to access array offset on value of type null in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 5
 [2026-02-13 09:02:42] Error: [2] Undefined variable $db in C:\xampp\htdocs\branch_logger\admin\archive_logs.php on line 14
+[2026-02-14 15:14:33] Error: [2] require_once(C:\xampp\htdocs\branch_logger/viewer_repo/remark_repo.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 8
+[2026-02-14 15:14:49] Error: [2] require_once(C:\xampp\htdocs\branch_logger/viewer_repo/remark.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 8
+[2026-02-14 15:45:24] Error: [2] Undefined variable $remarkText in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 420
+[2026-02-14 15:45:24] Error: [2] Undefined variable $remarkText in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 426

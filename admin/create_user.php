@@ -7,13 +7,13 @@ $error   = '';
 $success = '';
 
 $usernameValue = '';
-$roleValue     = 'Developer'; // Default role
+$roleValue     = 'developer'; // Default role
 $passwordValue = '';
 $confirmPasswordValue = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $usernameValue        = htmlspecialchars($_POST['username'] ?? '');
-    $roleValue            = $_POST['role'] ?? 'Developer';
+    $roleValue            = $_POST['role'] ?? 'developer';
     $passwordValue        = htmlspecialchars($_POST['password'] ?? '');
     $confirmPasswordValue = htmlspecialchars($_POST['confirm_password'] ?? '');
 }
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username        = trim($_POST['username'] ?? '');
     $password        = $_POST['password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
-    $role            = $_POST['role'] ?? 'Developer';
+    $role            = $_POST['role'] ?? 'developer';
 
     // --------------------------
     // Password match check
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($userRepo->createUser($username, $hash, $role)) {
             $success = 'User created successfully';
             $usernameValue = $passwordValue = $confirmPasswordValue = '';
-            $roleValue = 'Developer';
+            $roleValue = 'developer';
         } else {
             $error = 'Failed to create user';
         }

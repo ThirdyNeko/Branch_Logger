@@ -43,6 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ../admin/admin.php');
                 break;
 
+            case 'qa':
+                header('Location: ../qa/qa.php');
+                break;
+
             default:
                 header('Location: ../login.php');
         }

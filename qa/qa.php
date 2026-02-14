@@ -1,13 +1,13 @@
 <?php
 session_name('QA_LOGGER_SESSION');
 
-require_once __DIR__ . '/auth/require_login.php';
+require_once __DIR__ . '/../auth/require_login.php';
 date_default_timezone_set('Asia/Manila');
-require_once __DIR__ . '/config/db.php';
-require_once __DIR__ . '/repo/user_repo.php';
-require_once __DIR__ . '/viewer_repo/sessions.php';
-require_once __DIR__ . '/viewer_repo/users.php';
-require_once __DIR__ . '/viewer_repo/programs.php';
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../repo/user_repo.php';
+require_once __DIR__ . '/../viewer_repo/sessions.php';
+require_once __DIR__ . '/../viewer_repo/users.php';
+require_once __DIR__ . '/../viewer_repo/programs.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: ../auth/login.php');

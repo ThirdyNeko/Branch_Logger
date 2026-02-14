@@ -73,6 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 -------------------------------------------------- */
 $redirectUrl = match($_SESSION['user']['role'] ?? '') {
     'developer' => 'index.php',
+    'qa'        => 'qa/qa.php',
     default     => 'login.php'
 };
 ?>

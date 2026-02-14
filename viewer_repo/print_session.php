@@ -262,7 +262,7 @@ if ($iteration === 'summary') {
     }
     foreach ($logsByIteration as $iter => $logs) {
 
-        echo '<h5 class="mt-4">Iteration ' . htmlspecialchars($iter) . '</h5>';
+        echo '<h5 class="mt-4">Activity Log ' . htmlspecialchars($iter) . '</h5>';
 
         $logsToRender = group_error_logs($logs);
 

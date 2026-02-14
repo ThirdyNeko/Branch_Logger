@@ -315,7 +315,7 @@ if ($selectedProgram && $selectedSession) {
     <main class="flex-fill p-4 overflow-auto" style="height:100%;">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Iterations for Session <?= htmlspecialchars($selectedSession) ?></h4>
+            <h4 class="mb-0">Activity Logs for Session: <?= htmlspecialchars($selectedSession) ?></h4>
         </div>
 
         <!-- Iteration Dropdown -->
@@ -324,10 +324,10 @@ if ($selectedProgram && $selectedSession) {
                 <input type="hidden" name="user" value="<?= htmlspecialchars($selectedProgram) ?>">
                 <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
 
-                <label class="form-label"><strong>Iteration:</strong></label>
+                <label class="form-label"><strong>Activity Log:</strong></label>
                     <div class="dropdown">
                         <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="iterationDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
-                            <?= $selectedIteration ? htmlspecialchars($selectedIteration) : '-- Select Iteration --' ?>
+                            <?= $selectedIteration ? htmlspecialchars($selectedIteration) : '-- Select Activity Log --' ?>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-scroll w-100" aria-labelledby="iterationDropdown">
                             <!-- Session Summary Option -->
@@ -367,7 +367,7 @@ if ($selectedProgram && $selectedSession) {
             <div class="small">
                 Program: <?= htmlspecialchars($selectedProgram ?? '-') ?><br>
                 Session: <?= htmlspecialchars($selectedSession ?? '-') ?><br>
-                Iteration: <?= htmlspecialchars($selectedIteration ?? '-') ?><br>
+                Activity Log: <?= htmlspecialchars($selectedIteration ?? '-') ?><br>
                 Printed by: <?= htmlspecialchars($_SESSION['user']['username']) ?><br>
                 Printed at: <?= date('Y-m-d H:i:s') ?>
             </div>

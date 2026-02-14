@@ -10,7 +10,7 @@ require_once __DIR__ . '/viewer_repo/users.php';
 require_once __DIR__ . '/viewer_repo/programs.php';
 
 if (!isset($_SESSION['user'])) {
-    header('Location: login.php');
+    header('Location: auth/login.php');
     exit;
 }
 
@@ -23,7 +23,7 @@ $userRow = $userRepo->findByUsername($_SESSION['user']['username']);
 
 if (!$userRow) {
     session_destroy();
-    header('Location: login.php');
+    header('Location: auth/login.php');
     exit;
 }
 

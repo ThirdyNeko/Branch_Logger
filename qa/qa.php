@@ -1,13 +1,13 @@
 <?php
 session_name('QA_LOGGER_SESSION');
 
-require_once __DIR__ . '/../auth/require_login.php';
+require_once __DIR__ . '/auth/require_login.php';
 date_default_timezone_set('Asia/Manila');
-require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../repo/user_repo.php';
-require_once __DIR__ . '/../viewer_repo/sessions.php';
-require_once __DIR__ . '/../viewer_repo/users.php';
-require_once __DIR__ . '/../viewer_repo/programs.php';
+require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/repo/user_repo.php';
+require_once __DIR__ . '/viewer_repo/sessions.php';
+require_once __DIR__ . '/viewer_repo/users.php';
+require_once __DIR__ . '/viewer_repo/programs.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: ../auth/login.php');
@@ -133,10 +133,7 @@ $programs = loadPrograms($db);
 
         <!-- Top buttons -->
         <div class="d-grid gap-2">
-            <a href="create_user.php" class="btn btn-outline-dark btn-sm">Create User</a>
-            <button id="archiveBtn" class="btn btn-outline-danger btn-sm">
-                Archive Logs
-            </button>
+            <a href="../profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
         </div>
 
         <!-- Spacer pushes logout to the bottom -->
@@ -194,14 +191,14 @@ $programs = loadPrograms($db);
                             <th>User ID</th>
                             <th>Client IP</th>
                             <th>Last Updated</th> <!-- New column -->
-                            <th></th>
+                            <th></th> <!-- For print icon -->
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (!empty($sessionNames)): ?>
                         <?php foreach ($sessionNames as $session): ?>
                             <tr class="clickable-row"
-                                onclick="window.location='admin_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
+                                onclick="window.location='qa_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
                                 <td><?= htmlspecialchars($session['program_name'] ?? '-') ?></td>
                                 <td><?= htmlspecialchars($session['session_id']) ?></td>
                                 <td><?= htmlspecialchars($session['branch_id'] ?? '-') ?></td>
@@ -212,7 +209,6 @@ $programs = loadPrograms($db);
                                         ? date('Y-m-d H:i:s', strtotime($session['last_updated']))
                                         : '-' ?>
                                 </td>
-
                                 <!-- Print Icon -->
                                 <td onclick="event.stopPropagation();">
                                     <a href="#"
@@ -339,9 +335,9 @@ $programs = loadPrograms($db);
                 </div>
 
             </div>
-
+            
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" onclick="window.location='admin.php'">
+                <button type="button" class="btn btn-danger" onclick="window.location='index.php'">
                     Clear Filters
                 </button>
                 <button type="submit" class="btn btn-primary">
@@ -354,136 +350,8 @@ $programs = loadPrograms($db);
 </div>
 </form>
 
-<!------------------
- CONFIRMATION MODAL 
-------------------->
-<div class="modal fade" id="archiveConfirmModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title text-danger">Confirm Archive</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                Are you sure you want to archive the current logs?
-                <br><br>
-                <small class="text-muted">
-                    This will move the current logs into an archive table.
-                </small>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cancel
-                </button>
-                <button type="button" class="btn btn-danger" id="confirmArchiveBtn">
-                    Yes, Archive
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
-<!-- =====================
-     ARCHIVE RESULT MODAL
-====================== -->
-
-<div class="modal fade" id="archiveResultModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="archiveModalTitle">Archive Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body" id="archiveModalBody"></div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Close
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
 <!-- Bootstrap JS -->
 <script src="../scripts/bootstrap.bundle.min.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const archiveBtn = document.getElementById('archiveBtn');
-    const confirmBtn = document.getElementById('confirmArchiveBtn');
-
-    const confirmModal = new bootstrap.Modal(document.getElementById('archiveConfirmModal'));
-    const resultModal = new bootstrap.Modal(document.getElementById('archiveResultModal'));
-
-    const resultTitle = document.getElementById('archiveModalTitle');
-    const resultBody = document.getElementById('archiveModalBody');
-
-    // 1️⃣ Open confirmation modal
-    archiveBtn.addEventListener('click', function () {
-        confirmModal.show();
-    });
-
-    // 2️⃣ When admin confirms
-    confirmBtn.addEventListener('click', async function () {
-
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = "Archiving...";
-
-        try {
-            const response = await fetch('archive_logs.php', {
-                method: 'POST'
-            });
-
-            const result = await response.json();
-
-            confirmModal.hide();
-
-            if (result.success) {
-                resultTitle.textContent = "Success";
-                resultBody.innerHTML = `
-                    <div class="text-success">
-                        Logs archived successfully.
-                    </div>
-                `;
-            } else {
-                resultTitle.textContent = "Failed";
-                resultBody.innerHTML = `
-                    <div class="text-danger">
-                        Archive failed. Please try again.
-                    </div>
-                `;
-            }
-
-        } catch (error) {
-            confirmModal.hide();
-
-            resultTitle.textContent = "Error";
-            resultBody.innerHTML = `
-                <div class="text-danger">
-                    An unexpected error occurred.
-                </div>
-            `;
-        }
-
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = "Yes, Archive";
-
-        resultModal.show();
-    });
-
-});
-</script>
-
 <script>
 function printSession(user, session) {
     const url = `../viewer_repo/print_session.php?user=${user}&session=${session}&iteration=summary`;
@@ -508,7 +376,6 @@ function printSession(user, session) {
     iframe.src = url;
 }
 </script>
-
 
 </body>
 </html>

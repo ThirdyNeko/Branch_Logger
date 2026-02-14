@@ -1,16 +1,16 @@
 <?php
 session_name('QA_LOGGER_SESSION');
 
-require_once __DIR__ . '/auth/require_login.php';
+require_once __DIR__ . '/../auth/require_login.php';
 date_default_timezone_set('Asia/Manila');
-require_once __DIR__ . '/config/db.php';
-require_once __DIR__ . '/repo/user_repo.php';
-require_once __DIR__ . '/viewer_repo/logs.php';
-require_once __DIR__ . '/viewer_repo/iterations.php';
-require_once __DIR__ . '/viewer_repo/programs.php';
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../repo/user_repo.php';
+require_once __DIR__ . '/../viewer_repo/logs.php';
+require_once __DIR__ . '/../viewer_repo/iterations.php';
+require_once __DIR__ . '/../viewer_repo/programs.php';
 
 if (!isset($_SESSION['user'])) {
-    header('Location: auth/login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
@@ -19,7 +19,7 @@ $userRow = $userRepo->findByUsername($_SESSION['user']['username']);
 
 if (!$userRow) {
     session_destroy();
-    header('Location: auth/login.php');
+    header('Location: ../auth/login.php');
     exit;
 }
 
@@ -252,7 +252,7 @@ if ($selectedProgram && $selectedSession) {
     <title>QA Logger – Iterations</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap 5 -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
         .sidebar { width: 260px; min-height: 100vh; background: #fff; }
@@ -298,8 +298,8 @@ if ($selectedProgram && $selectedSession) {
 
         <!-- Top buttons -->
         <div class="d-grid gap-2">
-            <a href="index.php" class="btn btn-primary btn-sm">Back to Sessions</a>
-            <a href="profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
+            <a href="qa.php" class="btn btn-primary btn-sm">Back to Sessions</a>
+            <a href="../profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
             <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
                 Print Activity Log
             </button>
@@ -307,7 +307,7 @@ if ($selectedProgram && $selectedSession) {
 
         <!-- Spacer pushes logout to the bottom -->
         <div class="mt-auto">
-            <a href="auth/logger_logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
+            <a href="../auth/logger_logout.php" class="btn btn-danger btn-sm w-100">Logout</a>
         </div>
     </aside>
 
@@ -455,7 +455,7 @@ if ($selectedProgram && $selectedSession) {
 </div>
 
 <!-- Bootstrap JS -->
-<script src="scripts/bootstrap.bundle.min.js"></script>
+<script src="../scripts/bootstrap.bundle.min.js"></script>
 
 <script>
 function printLogs() {

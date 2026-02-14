@@ -185,6 +185,7 @@ $programs = loadPrograms($db);
         ====================== -->
         <div class="card">
             <div class="card-body p-0">
+                <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
@@ -232,7 +233,7 @@ $programs = loadPrograms($db);
                     <?php endif; ?>
                     </tbody>
                 </table>
-
+                </div>        
                 <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
                 <?php

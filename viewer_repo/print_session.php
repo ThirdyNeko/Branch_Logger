@@ -235,8 +235,10 @@ window.onload = function() {
 <body>
 
 <h4 class="mb-3">
+    Program: <?= htmlspecialchars($program) ?><br>
     Session: <?= htmlspecialchars($session) ?><br>
-    Program: <?= htmlspecialchars($program) ?>
+    Printed by: <?= htmlspecialchars($_SESSION['user']['username']) ?><br>
+    Printed at: <?= date('Y-m-d H:i:s') ?>
 </h4>
 
 <hr>

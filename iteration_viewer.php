@@ -258,6 +258,30 @@ if ($selectedProgram && $selectedSession) {
         .sidebar { width: 260px; min-height: 100vh; background: #fff; }
         .sidebar .user-box { border-bottom: 1px solid #e5e5e5; padding-bottom: 1rem; margin-bottom: 1rem; }
         .clickable-row { cursor: pointer; }
+
+        @media print {
+
+            /* Hide sidebar */
+            .sidebar {
+                display: none !important;
+            }
+
+            /* Remove padding */
+            main {
+                padding: 0 !important;
+            }
+
+            /* Show print header */
+            .print-header {
+                display: block !important;
+            }
+
+            /* Improve spacing */
+            body {
+                background: white;
+            }
+
+        }
     </style>
 </head>
 <body>
@@ -337,6 +361,19 @@ if ($selectedProgram && $selectedSession) {
 
         <!-- Logs -->
         <div id="print-area">
+
+        <div class="print-header d-none">
+            <h4 class="mb-1">QA Logger Report</h4>
+            <div class="small">
+                Program: <?= htmlspecialchars($selectedProgram ?? '-') ?><br>
+                Session: <?= htmlspecialchars($selectedSession ?? '-') ?><br>
+                Iteration: <?= htmlspecialchars($selectedIteration ?? '-') ?><br>
+                Printed by: <?= htmlspecialchars($_SESSION['user']['username']) ?><br>
+                Printed at: <?= date('Y-m-d H:i:s') ?>
+            </div>
+            <hr>
+        </div>
+
         <?php if (!empty($logsToShow)): ?>
             <?php
             $remarkName = $logsToShow[0]['_remark_name'] ?? '';

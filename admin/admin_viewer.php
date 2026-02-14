@@ -301,7 +301,7 @@ if ($selectedProgram && $selectedSession) {
         <div class="d-grid gap-2">
             <a href="admin.php" class="btn btn-primary btn-sm">Back to Dashboard</a>
             <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
-                Print Iteration
+                Print Activity Log
             </button>
         </div>
 
@@ -417,7 +417,7 @@ if ($selectedProgram && $selectedSession) {
 
                 // Render each iteration
                 foreach ($logsByIteration as $iter => $logs) {
-                    echo '<h5 class="mt-3">Iteration ' . htmlspecialchars($iter) . '</h5>';
+                    echo '<h5 class="mt-3">Activity Log ' . htmlspecialchars($iter) . '</h5>';
 
                     // Show remark if exists
                     $remarkEntry = $filteredRemarked[$selectedSession][$iter] ?? null;

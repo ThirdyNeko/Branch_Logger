@@ -211,10 +211,10 @@ $programs = loadPrograms($db);
                                 </td>
                                 <!-- Print Icon -->
                                 <td onclick="event.stopPropagation();">
-                                    <a href="viewer_repo/print_session.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>&iteration=summary"
-                                    target="_blank"
-                                    class="text-decoration-none">
-                                        <i class="bi bi-printer"></i>
+                                    <a href="#"
+                                        onclick="printSession('<?= urlencode($session['program_name'] ?? '') ?>','<?= urlencode($session['session_id'] ?? '') ?>'); return false;"
+                                        class="text-decoration-none">
+                                            <i class="bi bi-printer"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -352,6 +352,30 @@ $programs = loadPrograms($db);
 
 <!-- Bootstrap JS -->
 <script src="scripts/bootstrap.bundle.min.js"></script>
+<script>
+function printSession(user, session) {
+    const url = `viewer_repo/print_session.php?user=${user}&session=${session}&iteration=summary`;
+
+    let iframe = document.getElementById('printFrame');
+
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'printFrame';
+        iframe.style.position = 'absolute';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+    }
+
+    iframe.onload = function() {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    };
+
+    iframe.src = url;
+}
+</script>
 
 </body>
 </html>

@@ -159,10 +159,10 @@ $programs = loadPrograms($db);
                             </tr>
                         </thead>
                         <tbody>
-
                         <?php if (!empty($remarks)): ?>
                             <?php foreach ($remarks as $row): ?>
-                                <tr>
+                                <tr class="clickable-row"
+                                    onclick="window.location='iteration_viewer.php?user=<?= urlencode($row['program_name']) ?>&session=<?= urlencode($row['session_id']) ?>&iteration=<?= (int)$row['iteration'] ?>'">
                                     <td><?= htmlspecialchars($row['program_name']) ?></td>
                                     <td><?= htmlspecialchars($row['session_id']) ?></td>
                                     <td><?= (int)$row['iteration'] ?></td>
@@ -186,7 +186,6 @@ $programs = loadPrograms($db);
                                 </td>
                             </tr>
                         <?php endif; ?>
-
                         </tbody>
                     </table>
                 </div>

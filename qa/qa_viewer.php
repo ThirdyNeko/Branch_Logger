@@ -375,40 +375,6 @@ if ($selectedProgram && $selectedSession) {
             <h4 class="mb-0">Activity Logs for Session: <?= htmlspecialchars($selectedSession) ?></h4>
         </div>
 
-        <?php
-            $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
-            $hasRemark  = !empty($remarkData['remark']);
-            $isResolved = $remarkData['resolved'] ?? false;
-        ?>
-
-        <?php if ($hasRemark): ?>
-            <div class="card p-2 mb-2 text-center">
-                <?php if ($isResolved): ?>
-                    <!-- Resolved Badge -->
-                    <span class="badge bg-success w-100 py-2">
-                        ✅ Remark Resolved
-                    </span>
-
-                    <!-- Optional resolver comment -->
-                    <?php if (!empty($remarkData['resolve_comment'])): ?>
-                        <small class="d-block mt-1 text-muted">
-                            Comment: <?= htmlspecialchars($remarkData['resolve_comment']) ?>
-                        </small>
-                    <?php endif; ?>
-
-                    <!-- Resolved by and at -->
-                    <small class="d-block text-muted">
-                        By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '---') ?> <br>
-                        At: <?= htmlspecialchars($remarkData['resolved_at'] ?? '---') ?>
-                    </small>
-                <?php else: ?>
-                    <!-- Pending Badge -->
-                    <span class="badge bg-warning text-dark w-100 py-2">
-                        ⏳ Remark Pending
-                    </span>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
 
         <!-- Iteration Dropdown -->
         <div class="mb-3 d-flex align-items-center gap-2">
@@ -448,21 +414,61 @@ if ($selectedProgram && $selectedSession) {
         $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
         $hasRemark  = !empty($remarkData['remark']);
         ?>
+        <?php if (!empty($selectedIteration)): ?>
 
-        <?php if (!$hasRemark): ?>
-            <!-- QA Remark Form -->
-            <div class="card p-3 mt-2">
-                <form method="POST">
-                    <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
-                    <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
-                    <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
+            <?php if (!$hasRemark): ?>
+                <!-- QA Remark Form -->
+                <div class="card p-3 mt-2">
+                    <form method="POST">
+                        <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
+                        <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
+                        <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
 
-                    <input type="text" name="remark_name" class="form-control mb-2" placeholder="Remark name (optional)" maxlength="20" value="<?= htmlspecialchars($remarkData['name'] ?? '') ?>">
+                        <input type="text" name="remark_name" class="form-control mb-2" placeholder="Remark name (optional)" maxlength="20" value="<?= htmlspecialchars($remarkData['name'] ?? '') ?>">
 
-                    <textarea name="remark" class="form-control mb-2" placeholder="Enter QA remarks here..." required><?= htmlspecialchars($remarkData['remark'] ?? '') ?></textarea>
+                        <textarea name="remark" class="form-control mb-2" placeholder="Enter QA remarks here..." required><?= htmlspecialchars($remarkData['remark'] ?? '') ?></textarea>
 
-                    <button type="submit" class="btn btn-dark w-100">Save Remark</button>
-                </form>
+                        <button type="submit" class="btn btn-dark w-100">Save Remark</button>
+                    </form>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php
+            $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
+            $hasRemark  = !empty($remarkData['remark']);
+            $isResolved = $remarkData['resolved'] ?? false;
+        ?>
+
+        <?php if ($hasRemark): ?>
+            <div class="card p-2 mb-2 text-start">
+                <?php if ($isResolved): ?>
+                    <!-- Resolved Badge -->
+                    <span class="badge bg-success w-100 py-2">
+                        ✅ Remark Resolved
+                    </span>
+
+                    <!-- Optional resolver comment -->
+                    <?php if (!empty($remarkData['resolve_comment'])): ?>
+                        <div class="mb-2">
+                            <strong>Comment:</strong>
+                            <div class="text-muted">
+                                <?= nl2br(htmlspecialchars($remarkData['resolve_comment'])) ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Resolved by and at -->
+                    <small class="d-block text-muted">
+                        By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '---') ?> <br>
+                        At: <?= htmlspecialchars($remarkData['resolved_at'] ?? '---') ?>
+                    </small>
+                <?php else: ?>
+                    <!-- Pending Badge -->
+                    <span class="badge bg-warning text-dark w-100 py-2">
+                        ⏳ Remark Pending
+                    </span>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -484,29 +490,27 @@ if ($selectedProgram && $selectedSession) {
         </div>
 
         <?php if (!empty($logsToShow)): ?>
-
             <?php
-                // Single iteration remark info
-                $remarkEntry = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
-                $remarkName = $remarkEntry['name'] ?? '';
-                $remarkText = $remarkEntry['remark'] ?? '';
-                $remarkUser = $remarkEntry['username'] ?? 'Unknown';
-                ?>
+            // Single iteration remark info
+            $remarkEntry = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
+            $remarkName = $remarkEntry['name'] ?? '';
+            $remarkText = $remarkEntry['remark'] ?? '';
+            $remarkUser = $remarkEntry['username'] ?? 'Unknown';
+            ?>
 
-                <?php if ($remarkName || $remarkText) : ?>
-                    <div class="card log-card bg-primary-subtle border-primary p-3 mb-2">
-                        <strong>Remark Name:</strong> <?= htmlspecialchars($remarkName) ?><br>
-                        <small>By: <?= htmlspecialchars($remarkUser) ?></small>
-                    </div>
-                <?php endif; ?>
+            <?php if ($remarkName || $remarkText) : ?>
+                <div class="card log-card bg-primary-subtle border-primary p-3 mb-2">
+                    <strong>Remark Name:</strong> <?= htmlspecialchars($remarkName) ?><br>
+                    <small>By: <?= htmlspecialchars($remarkUser) ?></small>
+                </div>
+            <?php endif; ?>
 
-                <?php if ($remarkText) : ?>
-                    <div class="card log-card bg-light p-3 mb-2">
-                        <strong>Remark:</strong><br>
-                        <?= nl2br(htmlspecialchars($remarkText)) ?>
-                    </div>
-                <?php endif; ?>
-
+            <?php if ($remarkText) : ?>
+                <div class="card log-card bg-light p-3 mb-2">
+                    <strong>Remark:</strong><br>
+                    <?= nl2br(htmlspecialchars($remarkText)) ?>
+                </div>
+            <?php endif; ?>
             <?php
             
                 // Single iteration view
@@ -515,6 +519,7 @@ if ($selectedProgram && $selectedSession) {
                     echo render_log_entry($log);
                 }
             ?>
+            
         <?php endif; ?>
         </div>
     </main>

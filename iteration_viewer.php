@@ -429,13 +429,14 @@ if ($selectedProgram && $selectedSession) {
                 <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
                 <input type="hidden" name="mark_resolved" value="1">
 
-                <!-- Resolver comment input -->
-                <input type="text" 
+                <!-- Resolver comment textarea -->
+                <textarea 
                     name="resolve_comment" 
                     class="form-control mb-2" 
-                    placeholder="Add a comment for resolving..." 
-                    maxlength="100" 
-                    required>
+                    placeholder="Add a detailed comment for resolving..."
+                    rows="4"
+                    maxlength="10000"
+                    required></textarea>
 
                 <button type="submit" class="btn btn-success w-100 py-2">
                     ✅ Mark Remark as Resolved
@@ -444,15 +445,18 @@ if ($selectedProgram && $selectedSession) {
 
         <?php elseif ($hasRemark && $isResolved): ?>
             <!-- Display resolved info -->
-            <div class="card p-2 mb-2 text-center">
-                <span class="badge bg-success w-100 py-2">
+            <div class="card p-3 mb-2 text-start">
+                <span class="badge bg-success w-100 py-2 mb-2 text-center">
                     ✅ Remark Resolved
                 </span>
 
                 <?php if (!empty($remarkData['resolve_comment'])): ?>
-                    <small class="d-block mt-1 text-muted">
-                        Comment: <?= htmlspecialchars($remarkData['resolve_comment']) ?>
-                    </small>
+                    <div class="mb-2">
+                        <strong>Comment:</strong>
+                        <div class="text-muted">
+                            <?= nl2br(htmlspecialchars($remarkData['resolve_comment'])) ?>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <small class="d-block text-muted">

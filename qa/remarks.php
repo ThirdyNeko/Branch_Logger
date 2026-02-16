@@ -153,7 +153,6 @@ $programs = loadPrograms($db);
                                 <th>Session</th>
                                 <th>Iteration</th>
                                 <th>Remark Name</th>
-                                <th>Remark</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                             </tr>
@@ -167,7 +166,6 @@ $programs = loadPrograms($db);
                                     <td><?= htmlspecialchars($row['session_id']) ?></td>
                                     <td><?= (int)$row['iteration'] ?></td>
                                     <td><?= htmlspecialchars($row['remark_name']) ?></td>
-                                    <td><?= htmlspecialchars($row['remark']) ?></td>
                                     <td>
                                         <?php if ($row['resolved']): ?>
                                             <span class="badge bg-success">Resolved</span>
@@ -175,7 +173,7 @@ $programs = loadPrograms($db);
                                             <span class="badge bg-warning text-dark">Pending</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= date('Y-m-d H:i:s', strtotime($row['created_at'])) ?></td>
+                                    <td><?= date('Y-m-d', strtotime($row['created_at'])) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>

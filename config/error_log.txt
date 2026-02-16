@@ -1338,3 +1338,9 @@
 [2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 267
 [2026-02-16 09:50:08] Error: [2] Undefined variable $status in C:\xampp\htdocs\branch_logger\index.php on line 333
 [2026-02-16 09:50:08] Error: [2] Undefined variable $status in C:\xampp\htdocs\branch_logger\index.php on line 336
+[2026-02-16 14:06:29] Error: [2] Undefined variable $program in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 427
+[2026-02-16 14:06:29] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 427
+[2026-02-16 14:06:29] Error: [2] Undefined variable $session in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 428
+[2026-02-16 14:06:29] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 428
+[2026-02-16 14:06:29] Error: [2] Undefined variable $iteration in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 429
+[2026-02-16 14:06:29] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 429

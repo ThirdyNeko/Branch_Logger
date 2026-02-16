@@ -384,18 +384,31 @@ if ($selectedProgram && $selectedSession) {
         <?php if ($hasRemark): ?>
             <div class="card p-2 mb-2 text-center">
                 <?php if ($isResolved): ?>
+                    <!-- Resolved Badge -->
                     <span class="badge bg-success w-100 py-2">
                         ✅ Remark Resolved
                     </span>
+
+                    <!-- Optional resolver comment -->
+                    <?php if (!empty($remarkData['resolve_comment'])): ?>
+                        <small class="d-block mt-1 text-muted">
+                            Comment: <?= htmlspecialchars($remarkData['resolve_comment']) ?>
+                        </small>
+                    <?php endif; ?>
+
+                    <!-- Resolved by and at -->
+                    <small class="d-block text-muted">
+                        By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '---') ?> <br>
+                        At: <?= htmlspecialchars($remarkData['resolved_at'] ?? '---') ?>
+                    </small>
                 <?php else: ?>
+                    <!-- Pending Badge -->
                     <span class="badge bg-warning text-dark w-100 py-2">
                         ⏳ Remark Pending
                     </span>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
-
-        
 
         <!-- Iteration Dropdown -->
         <div class="mb-3 d-flex align-items-center gap-2">

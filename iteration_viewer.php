@@ -39,28 +39,39 @@ $selectedIteration = $_GET['iteration'] ?? '';
 ========================== */
 
 if (isset($_POST['mark_resolved'])) {
-    $program   = $_POST['program'];
-    $session   = $_POST['session'];
-    $iteration = (int)$_POST['iteration'];
+    $program        = $_POST['program'];
+    $session        = $_POST['session'];
+    $iteration      = (int)$_POST['iteration'];
+    $resolveComment = $_POST['resolve_comment'] ?? '';
+    $resolvedBy     = $_SESSION['user']['username'] ?? 'Unknown';
+    $resolvedAt     = date('Y-m-d H:i:s');
 
-    // Update the resolved field
+    // Update the resolved fields
     $stmt = $db->prepare("
         UPDATE qa_remarks
-        SET resolved = 1
+        SET 
+            resolved = 1,
+            resolved_by = :resolved_by,
+            resolved_at = :resolved_at,
+            resolve_comment = :resolve_comment
         WHERE program_name = :program
           AND session_id = :session
           AND iteration = :iteration
     ");
     $stmt->execute([
-        ':program'   => $program,
-        ':session'   => $session,
-        ':iteration' => $iteration
+        ':resolved_by'    => $resolvedBy,
+        ':resolved_at'    => $resolvedAt,
+        ':resolve_comment'=> $resolveComment,
+        ':program'        => $program,
+        ':session'        => $session,
+        ':iteration'      => $iteration
     ]);
 
     // Reload page to reflect change
     header("Location: " . $_SERVER['REQUEST_URI']);
     exit;
 }
+
 
 /* ==========================
    LOAD ITERATIONS
@@ -240,6 +251,10 @@ if ($selectedProgram && $selectedSession) {
         $selectedSession
     );
 }
+
+
+
+
 /* ==========================
    ITERATION LIST FOR SELECTED SESSION
 ========================== */
@@ -401,29 +416,51 @@ if ($selectedProgram && $selectedSession) {
         </div>
 
         <?php
-                $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
-                $hasRemark  = !empty($remarkData['remark']);
-                $isResolved = $remarkData['resolved'] ?? false;
-            ?>
+        $remarkData = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
+        $hasRemark  = !empty($remarkData['remark']);
+        $isResolved = $remarkData['resolved'] ?? false;
+        ?>
 
-            <?php if ($hasRemark && !$isResolved): ?>
-                <form method="POST" class="mb-2 text-center">
-                    <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
-                    <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
-                    <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
-                    <input type="hidden" name="mark_resolved" value="1">
+        <?php if ($hasRemark && !$isResolved): ?>
+            <!-- Form to mark remark as resolved -->
+            <form method="POST" class="mb-2 text-center">
+                <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
+                <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
+                <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
+                <input type="hidden" name="mark_resolved" value="1">
 
-                    <button type="submit" class="btn btn-success w-100 py-2">
-                        ✅ Mark Remark as Resolved
-                    </button>
-                </form>
-            <?php elseif ($hasRemark && $isResolved): ?>
-                <div class="card p-2 mb-2 text-center">
-                    <span class="badge bg-success w-100 py-2">
-                        ✅ Remark Resolved
-                    </span>
-                </div>
-            <?php endif; ?>
+                <!-- Resolver comment input -->
+                <input type="text" 
+                    name="resolve_comment" 
+                    class="form-control mb-2" 
+                    placeholder="Add a comment for resolving..." 
+                    maxlength="100" 
+                    required>
+
+                <button type="submit" class="btn btn-success w-100 py-2">
+                    ✅ Mark Remark as Resolved
+                </button>
+            </form>
+
+        <?php elseif ($hasRemark && $isResolved): ?>
+            <!-- Display resolved info -->
+            <div class="card p-2 mb-2 text-center">
+                <span class="badge bg-success w-100 py-2">
+                    ✅ Remark Resolved
+                </span>
+
+                <?php if (!empty($remarkData['resolve_comment'])): ?>
+                    <small class="d-block mt-1 text-muted">
+                        Comment: <?= htmlspecialchars($remarkData['resolve_comment']) ?>
+                    </small>
+                <?php endif; ?>
+
+                <small class="d-block text-muted">
+                    By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '-') ?> <br>
+                    At: <?= htmlspecialchars($remarkData['resolved_at'] ?? '-') ?>
+                </small>
+            </div>
+        <?php endif; ?>
 
         <!-- Logs -->
         <div id="print-area">

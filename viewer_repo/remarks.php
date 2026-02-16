@@ -111,3 +111,97 @@ function loadRemarksByProgram(PDO $db, string $program): array
     return $remarked;
 }
 
+/**
+ * Load paginated QA remarks with filters.
+ *
+ * @return array{
+ *     data: array<int, array>,
+ *     total: int
+ * }
+ */
+function loadRemarksPaginated(
+    PDO $db,
+    ?string $program,
+    ?string $username,
+    ?string $status,      // 'resolved' | 'pending' | null
+    ?string $fromDate,
+    ?string $toDate,
+    int $perPage,
+    int $offset
+): array {
+
+    $where = [];
+    $params = [];
+
+    if ($program) {
+        $where[] = "program_name LIKE :program";
+        $params[':program'] = "%$program%";
+    }
+
+    if ($username) {
+        $where[] = "username LIKE :username";
+        $params[':username'] = "%$username%";
+    }
+
+    if ($status !== null && $status !== '') {
+        $where[] = "resolved = :resolved";
+        $params[':resolved'] = $status === 'resolved' ? 1 : 0;
+    }
+
+    if ($fromDate) {
+        $where[] = "created_at >= :from_date";
+        $params[':from_date'] = $fromDate . " 00:00:00";
+    }
+
+    if ($toDate) {
+        $where[] = "created_at <= :to_date";
+        $params[':to_date'] = $toDate . " 23:59:59";
+    }
+
+    $whereSql = $where ? "WHERE " . implode(" AND ", $where) : "";
+
+    /* ==========================
+       TOTAL COUNT
+    ========================== */
+
+    $countSql = "SELECT COUNT(*) FROM qa_remarks $whereSql";
+    $stmt = $db->prepare($countSql);
+    $stmt->execute($params);
+    $total = (int)$stmt->fetchColumn();
+
+    /* ==========================
+       PAGINATED DATA (ROW_NUMBER)
+    ========================== */
+
+    $sql = "
+        SELECT *
+        FROM (
+            SELECT 
+                *,
+                ROW_NUMBER() OVER (ORDER BY created_at DESC) AS row_num
+            FROM qa_remarks
+            $whereSql
+        ) AS numbered
+        WHERE row_num BETWEEN :start AND :end
+    ";
+
+    $stmt = $db->prepare($sql);
+
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+
+    $start = $offset + 1;
+    $end   = $offset + $perPage;
+
+    $stmt->bindValue(':start', $start, PDO::PARAM_INT);
+    $stmt->bindValue(':end', $end, PDO::PARAM_INT);
+
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return [
+        'data'  => $data,
+        'total' => $total
+    ];
+}

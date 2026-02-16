@@ -1266,3 +1266,75 @@
 [2026-02-14 15:14:49] Error: [2] require_once(C:\xampp\htdocs\branch_logger/viewer_repo/remark.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 8
 [2026-02-14 15:45:24] Error: [2] Undefined variable $remarkText in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 420
 [2026-02-14 15:45:24] Error: [2] Undefined variable $remarkText in C:\xampp\htdocs\branch_logger\iteration_viewer.php on line 426
+[2026-02-16 09:43:05] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 301
+[2026-02-16 09:43:05] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 301
+[2026-02-16 09:43:05] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 313
+[2026-02-16 09:43:05] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 313
+[2026-02-16 09:43:05] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 319
+[2026-02-16 09:43:05] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 319
+[2026-02-16 09:43:05] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 325
+[2026-02-16 09:43:05] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 325
+[2026-02-16 09:43:05] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 331
+[2026-02-16 09:43:05] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 331
+[2026-02-16 09:43:26] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 301
+[2026-02-16 09:43:26] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 301
+[2026-02-16 09:43:26] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 313
+[2026-02-16 09:43:26] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 313
+[2026-02-16 09:43:26] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 319
+[2026-02-16 09:43:26] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 319
+[2026-02-16 09:43:26] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 325
+[2026-02-16 09:43:26] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 325
+[2026-02-16 09:43:26] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 331
+[2026-02-16 09:43:26] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 331
+[2026-02-16 09:43:36] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 297
+[2026-02-16 09:43:36] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 297
+[2026-02-16 09:43:36] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 309
+[2026-02-16 09:43:36] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 309
+[2026-02-16 09:43:36] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 315
+[2026-02-16 09:43:36] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 315
+[2026-02-16 09:43:36] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 321
+[2026-02-16 09:43:36] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 321
+[2026-02-16 09:43:36] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 327
+[2026-02-16 09:43:36] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 327
+[2026-02-16 09:43:57] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 297
+[2026-02-16 09:43:57] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 297
+[2026-02-16 09:43:57] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 309
+[2026-02-16 09:43:57] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 309
+[2026-02-16 09:43:57] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 315
+[2026-02-16 09:43:57] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 315
+[2026-02-16 09:43:57] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 321
+[2026-02-16 09:43:57] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 321
+[2026-02-16 09:43:57] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 327
+[2026-02-16 09:43:57] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 327
+[2026-02-16 09:45:56] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:45:56] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:45:56] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:45:56] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:45:56] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:45:56] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:45:56] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:45:56] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:45:56] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:45:56] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:46:42] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:46:42] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:46:42] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:46:42] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:46:42] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:46:42] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:46:42] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:46:42] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:46:42] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:46:42] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:46:43] Error: [2] Undefined variable $fromTime in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 237
+[2026-02-16 09:46:43] Error: [2] Undefined variable $toTime in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 249
+[2026-02-16 09:46:43] Error: [2] Undefined variable $branch in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 255
+[2026-02-16 09:46:43] Error: [2] Undefined variable $userId in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 261
+[2026-02-16 09:46:43] Error: [2] Undefined variable $clientIP in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:46:43] Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\branch_logger\remarks.php on line 267
+[2026-02-16 09:50:08] Error: [2] Undefined variable $status in C:\xampp\htdocs\branch_logger\index.php on line 333
+[2026-02-16 09:50:08] Error: [2] Undefined variable $status in C:\xampp\htdocs\branch_logger\index.php on line 336

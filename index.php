@@ -133,7 +133,9 @@ $programs = loadPrograms($db);
 
         <!-- Top buttons -->
         <div class="d-grid gap-2">
-            <a href="profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
+            <a href="profile.php" class="btn btn-outline-secondary btn-sm">Profile</a>
+            <a href="index.php" class="btn btn-dark btn-sm">Logs</a>
+            <a href="remarks.php" class="btn btn-outline-secondary btn-sm">Remarks</a>
         </div>
 
         <!-- Spacer pushes logout to the bottom -->

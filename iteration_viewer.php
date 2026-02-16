@@ -341,7 +341,6 @@ if ($selectedProgram && $selectedSession) {
         <!-- Top buttons -->
         <div class="d-grid gap-2">
             <a href="index.php" class="btn btn-primary btn-sm">Back to Sessions</a>
-            <a href="profile.php" class="btn btn-outline-dark btn-sm">Profile</a>
             <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
                 Print Activity Log
             </button>

@@ -139,9 +139,6 @@ $programs = loadPrograms($db);
         </div>
 
         <div class="card">
-            <div class="card-header fw-bold">
-                QA Remarks
-            </div>
 
             <div class="card-body p-0">
                 <div class="table-responsive">

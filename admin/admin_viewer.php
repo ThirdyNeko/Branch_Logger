@@ -263,7 +263,9 @@ if ($selectedProgram && $selectedSession) {
 
             /* Hide sidebar */
             .sidebar {
-                display: none !important;
+                width: 260px;
+                min-height: 100vh;
+                background: #ffffff;
             }
 
             /* Remove padding */

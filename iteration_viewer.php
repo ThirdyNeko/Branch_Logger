@@ -312,7 +312,7 @@ if ($selectedProgram && $selectedSession) {
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
-        .sidebar { width: 260px; min-height: 100vh; background: #fff; }
+        .sidebar { width: 260px; min-height: 100vh; background: #fff; flex-shrink: 0; }
         .sidebar .user-box { border-bottom: 1px solid #e5e5e5; padding-bottom: 1rem; margin-bottom: 1rem; }
         .clickable-row { cursor: pointer; }
 
@@ -320,9 +320,7 @@ if ($selectedProgram && $selectedSession) {
 
             /* Hide sidebar */
             .sidebar {
-                width: 260px;
-                min-height: 100vh;
-                background: #ffffff;
+                display: none !important;
             }
 
             /* Remove padding */

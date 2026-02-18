@@ -329,7 +329,7 @@ if ($selectedProgram && $selectedSession) {
                         <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="iterationDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
                             <?= $selectedIteration ? htmlspecialchars($selectedIteration) : '-- Select Activity Log --' ?>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-scroll w-100" aria-labelledby="iterationDropdown">
+                        <ul class="dropdown-menu dropdown-menu-scroll w-100 text-wrap" aria-labelledby="iterationDropdown">
                             <!-- Session Summary Option -->
                             <li>
                                 <a class="dropdown-item"
@@ -345,10 +345,10 @@ if ($selectedProgram && $selectedSession) {
 
                                 $label = $iter;
                                 if ($remarkName) $label .= ' - ' . $remarkName;
-                                if ($hasError)   $label .= ' - ⚠ Error';
+                                if ($hasError)   $label .= '⚠';
                             ?>
                             <li>
-                                <a class="dropdown-item <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
+                                <a class="dropdown-item text-wrap <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
                                     href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>">
                                     <?= htmlspecialchars($label) ?>
                                 </a>

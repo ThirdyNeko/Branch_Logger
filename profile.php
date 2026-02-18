@@ -3,6 +3,7 @@ session_name('QA_LOGGER_SESSION');
 session_start();
 require __DIR__ . '/config/db.php';
 require_once __DIR__ . '/repo/user_repo.php';
+require_once __DIR__ . '/auth/require_login.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: ' . BASE_URL . 'auth/login.php');

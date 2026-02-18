@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+define('BASE_URL', '/branch_logger/');
 // Destroy all session data
 $_SESSION = [];
 if (ini_get("session.use_cookies")) {

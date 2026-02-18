@@ -1,6 +1,7 @@
 <?php
 
 date_default_timezone_set('Asia/Manila');
+define('BASE_URL', '/branch_logger/');
 
 function errorHandler($errno, $errstr, $errfile, $errline)
 {

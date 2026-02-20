@@ -6,13 +6,11 @@ function loadSessionNamesForViewer(
     ?string $toDateTime   = null,
     ?string $branch       = null,
     ?string $userId       = null,
-    ?string $clientIP     = null,
-    int $limit = 50,
-    int $offset = 0
+    ?string $clientIP     = null
 ): array {
 
     if ($program === '') {
-        return ['sessions' => [], 'total' => 0, 'baseQuery' => ''];
+        return ['sessions' => [], 'baseQuery' => ''];
     }
 
     $params = [];
@@ -48,12 +46,7 @@ function loadSessionNamesForViewer(
         $params[':clientIP'] = '%' . $clientIP . '%';
     }
 
-    // Total sessions for pagination
-    $countStmt = $db->prepare("SELECT COUNT(DISTINCT session_id) FROM qa_logs $where");
-    $countStmt->execute($params);
-    $totalSessions = (int)$countStmt->fetchColumn();
-
-    // Base query for pagination links
+    // Base query for preserving filters
     $baseQuery = http_build_query([
         'user'      => $program ?? '',
         'from_date' => $fromDateTime ? substr($fromDateTime, 0, 10) : '',
@@ -65,44 +58,28 @@ function loadSessionNamesForViewer(
         'client_ip' => $clientIP ?? ''
     ]);
 
-    // Fetch paginated sessions using SQL Server syntax
+    // Simple grouped query without pagination
     $sql = "
-        SELECT *
-        FROM (
-            SELECT
-                program_name,
-                session_id,
-                MAX(branch_id) AS branch_id,
-                MAX(user_id)   AS user_id,
-                MAX(client_ip) AS client_ip,
-                MIN(created_at) AS started_at,
-                MAX(created_at) AS last_updated,
-                ROW_NUMBER() OVER (ORDER BY MAX(created_at) DESC) AS row_num
-            FROM qa_logs
-            $where
-            GROUP BY session_id, program_name
-        ) AS sub
-        WHERE row_num BETWEEN :startRow AND :endRow
-        ORDER BY last_updated DESC
+        SELECT
+            program_name,
+            session_id,
+            MAX(branch_id) AS branch_id,
+            MAX(user_id)   AS user_id,
+            MAX(client_ip) AS client_ip,
+            MIN(created_at) AS started_at,
+            MAX(created_at) AS last_updated
+        FROM qa_logs
+        $where
+        GROUP BY session_id, program_name
+        ORDER BY MAX(created_at) DESC
     ";
 
     $stmt = $db->prepare($sql);
-
-    // Bind filters
-    foreach ($params as $key => $val) {
-        $stmt->bindValue($key, $val);
-    }
-
-    // Bind pagination rows
-    $stmt->bindValue(':startRow', $offset + 1, PDO::PARAM_INT);
-    $stmt->bindValue(':endRow', $offset + $limit, PDO::PARAM_INT);
-
-    $stmt->execute();
+    $stmt->execute($params);
     $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return [
         'sessions' => $sessions,
-        'total'    => $totalSessions,
         'baseQuery'=> $baseQuery
     ];
 }

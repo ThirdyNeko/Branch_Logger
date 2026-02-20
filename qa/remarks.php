@@ -33,27 +33,14 @@ $username = $_SESSION['user']['username'];
    PAGINATION
 ========================== */
 
-$perPage = 50;
-$page = isset($_GET['page']) && is_numeric($_GET['page'])
-    ? max(1, (int)$_GET['page'])
-    : 1;
-
-$offset = ($page - 1) * $perPage;
-
-$result = loadRemarksPaginated(
+$remarks = loadRemarks(
     $db,
     $selectedProgram ?: null,
     $username ?: null,
     $status !== '' ? $status : null,
     $fromDate ?: null,
-    $toDate ?: null,
-    $perPage,
-    $offset
+    $toDate ?: null
 );
-
-$remarks = $result['data'];
-$totalRemarks = $result['total'];
-$totalPages = ceil($totalRemarks / $perPage);
 
 /* ==========================
    PROGRAM LIST
@@ -73,6 +60,8 @@ $programs = loadPrograms($db);
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="../bootstrap-icons/font/bootstrap-icons.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="../css/datatables.min.css">
 
     <style>
         body {
@@ -146,7 +135,14 @@ $programs = loadPrograms($db);
 
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <script src="../scripts/jquery-4.0.0.min.js"></script>
+                    <script src="../scripts/datatables.min.js"></script>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        new DataTable('#remarks');
+                    });
+                    </script>
+                    <table id="remarks" class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Program</th>
@@ -188,33 +184,6 @@ $programs = loadPrograms($db);
                 </div>
             </div>
         </div>
-        <?php if ($totalPages > 1): ?>
-        <nav class="mt-3">
-            <ul class="pagination justify-content-center">
-
-                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?<?= http_build_query($_GET + ['page' => $page - 1]) ?>">
-                        Previous
-                    </a>
-                </li>
-
-                <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                    <li class="page-item <?= $p == $page ? 'active' : '' ?>">
-                        <a class="page-link" href="?<?= http_build_query($_GET + ['page' => $p]) ?>">
-                            <?= $p ?>
-                        </a>
-                    </li>
-                <?php endfor; ?>
-
-                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?<?= http_build_query($_GET + ['page' => $page + 1]) ?>">
-                        Next
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
-        <?php endif; ?>
     </main>
 </div>
 

@@ -57,10 +57,6 @@ if ($toDate) {
    DETERMINE CURRENT PAGE
 ========================== */
 
-$perPage = 50;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $perPage;
-
 $result = loadSessionNamesForViewer(
     $db,
     $selectedProgram ?: null,
@@ -68,16 +64,11 @@ $result = loadSessionNamesForViewer(
     $toDate   ? $toDateTime   : null,
     $branch ?: null,
     $userId ?: null,
-    $clientIP ?: null,
-    $perPage,
-    $offset
+    $clientIP ?: null
 );
 
 $sessionNames = $result['sessions'];
-$totalSessions = $result['total'];
 $baseQuery = $result['baseQuery'];
-
-$totalPages = ceil($totalSessions / $perPage);
 
 /* ==========================
    PROGRAM LIST (FROM LOGS)
@@ -97,6 +88,8 @@ $programs = loadPrograms($db);
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="../bootstrap-icons/font/bootstrap-icons.min.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="../css/datatables.min.css">
 
     <style>
         body {
@@ -186,7 +179,14 @@ $programs = loadPrograms($db);
         <div class="card">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                    <script src="../scripts/jquery-4.0.0.min.js"></script>
+                    <script src="../scripts/datatables.min.js"></script>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        new DataTable('#logs');
+                    });
+                    </script>
+                <table id="logs" class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>Program</th>
@@ -234,43 +234,6 @@ $programs = loadPrograms($db);
                     </tbody>
                 </table>
                 </div>        
-                <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-                <?php
-                // Build base query preserving filters
-                $baseFilters = [
-                    'user'      => $selectedProgram,
-                    'from_date' => $fromDate ?? '',
-                    'from_time' => $fromTime ?? '',
-                    'to_date'   => $toDate ?? '',
-                    'to_time'   => $toTime ?? '',
-                    'branch'    => $branch ?? '',
-                    'user_id'   => $userId ?? '',
-                    'client_ip' => $clientIP ?? ''
-                ];
-                $baseQuery = http_build_query($baseFilters);
-                ?>
-                <nav aria-label="Sessions pagination" class="mt-3">
-                    <ul class="pagination justify-content-center mb-0">
-                        <!-- Previous button -->
-                        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $page - 1 ?>" tabindex="-1">Previous</a>
-                        </li>
-
-                        <!-- Page numbers -->
-                        <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                            <li class="page-item <?= $p === $page ? 'active' : '' ?>">
-                                <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $p ?>"><?= $p ?></a>
-                            </li>
-                        <?php endfor; ?>
-
-                        <!-- Next button -->
-                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                            <a class="page-link" href="?<?= $baseQuery ?>&page=<?= $page + 1 ?>">Next</a>
-                        </li>
-                    </ul>
-                </nav>
-                <?php endif; ?>
             </div>
         </div>
     </main>

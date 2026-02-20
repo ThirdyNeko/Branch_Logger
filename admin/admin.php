@@ -53,22 +53,6 @@ if ($fromDate) {
 if ($toDate) {
     $toDateTime = $toDate . ' ' . ($toTime ?: '23:59:59');
 }
-/* ==========================
-   DETERMINE CURRENT PAGE
-========================== */
-
-$result = loadSessionNamesForViewer(
-    $db,
-    $selectedProgram ?: null,
-    $fromDate ? $fromDateTime : null,
-    $toDate   ? $toDateTime   : null,
-    $branch ?: null,
-    $userId ?: null,
-    $clientIP ?: null
-);
-
-$sessionNames = $result['sessions'];
-$baseQuery = $result['baseQuery'];
 
 /* ==========================
    PROGRAM LIST (FROM LOGS)
@@ -183,7 +167,55 @@ $programs = loadPrograms($db);
                     <script src="../scripts/datatables.min.js"></script>
                     <script>
                     document.addEventListener('DOMContentLoaded', function () {
-                        new DataTable('#logs');
+
+                        const table = new DataTable('#logs', {
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: '../viewer_repo/session_server.php',
+                                type: 'POST',
+                                data: function(d) {
+                                    d.user = document.querySelector('[name="user"]').value;
+                                    d.branch = document.querySelector('[name="branch"]').value;
+                                    d.user_id = document.querySelector('[name="user_id"]').value;
+                                    d.client_ip = document.querySelector('[name="client_ip"]').value;
+                                }
+                            },
+                            pageLength: 25,
+                            searching: false,
+                            ordering: false
+                        });
+
+                        // Attach row click and print icon after each draw
+                        table.on('draw', function() {
+                            document.querySelectorAll('#logs tbody tr').forEach(row => {
+
+                                const cells = row.querySelectorAll('td');
+                                if(cells.length < 2) return; // ignore empty rows
+
+                                const program = cells[0].textContent.trim();
+                                const session = cells[1].textContent.trim();
+
+                                // Row click
+                                row.onclick = function(e) {
+                                    if (!e.target.closest('.print-session')) { // ignore clicks on print icon
+                                        window.location.href = `admin_viewer.php?user=${encodeURIComponent(program)}&session=${encodeURIComponent(session)}`;
+                                    }
+                                };
+
+                                // Print icon click
+                                const printIcon = row.querySelector('a.print-session');
+                                if (printIcon) {
+                                    printIcon.onclick = function(e) {
+                                        e.stopPropagation(); // stop row click
+                                        printSession(program, session);
+                                        return false;
+                                    };
+                                }
+
+                            });
+                        });
+
                     });
                     </script>
                 <table id="logs" class="table table-hover mb-0">
@@ -198,40 +230,7 @@ $programs = loadPrograms($db);
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody>
-                    <?php if (!empty($sessionNames)): ?>
-                        <?php foreach ($sessionNames as $session): ?>
-                            <tr class="clickable-row"
-                                onclick="window.location='admin_viewer.php?user=<?= urlencode($session['program_name'] ?? '') ?>&session=<?= urlencode($session['session_id'] ?? '') ?>'">
-                                <td><?= htmlspecialchars($session['program_name'] ?? '-') ?></td>
-                                <td><?= htmlspecialchars($session['session_id']) ?></td>
-                                <td><?= htmlspecialchars($session['branch_id'] ?? '-') ?></td>
-                                <td><?= htmlspecialchars($session['user_id'] ?? '-') ?></td>
-                                <td><?= htmlspecialchars($session['client_ip'] ?? '-') ?></td>
-                                <td>
-                                    <?= !empty($session['last_updated'])
-                                        ? date('Y-m-d H:i:s', strtotime($session['last_updated']))
-                                        : '-' ?>
-                                </td>
-
-                                <!-- Print Icon -->
-                                <td onclick="event.stopPropagation();">
-                                    <a href="#"
-                                        onclick="printSession('<?= urlencode($session['program_name'] ?? '') ?>','<?= urlencode($session['session_id'] ?? '') ?>'); return false;"
-                                        class="text-decoration-none">
-                                            <i class="bi bi-printer"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="6" class="text-center text-muted p-4">
-                                No sessions found
-                            </td>
-                        </tr>
-                    <?php endif; ?>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
                 </div>        
             </div>
@@ -242,8 +241,8 @@ $programs = loadPrograms($db);
 <!-- =====================
      FILTER MODAL
 ====================== -->
-<form method="GET">
-<div class="modal fade" id="filterModal" tabindex="-1">
+<div class="modal fade" id="filterModal">
+    <form>
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
 
@@ -315,8 +314,9 @@ $programs = loadPrograms($db);
 
         </div>
     </div>
+    </form>
 </div>
-</form>
+
 
 <!------------------
  CONFIRMATION MODAL 

@@ -32,7 +32,7 @@ foreach ($result['sessions'] as $row) {
         $row['branch_id'],
         $row['user_id'],
         $row['client_ip'],
-        $row['last_updated'],
+        date('Y-m-d H:i:s', strtotime($row['last_updated'])), // 👈 format to seconds
         '<a href="#" class="print-session text-decoration-none"><i class="bi bi-printer"></i></a>'
     ];
 }

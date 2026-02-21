@@ -39,6 +39,9 @@ try {
     // 4️⃣ Truncate remarks table
     $db->exec("TRUNCATE TABLE qa_remarks");
 
+    // 5️⃣ Truncate sessions table
+    $db->exec("TRUNCATE TABLE qa_session_state");
+
     echo json_encode([
         'success' => true,
         'message' => "Logs archived to $archiveTable. Remarks truncated."

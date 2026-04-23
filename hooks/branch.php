@@ -3,7 +3,7 @@
 function getBranchByIp(string $ip): ?string
 {
     static $map = [
-        'SHOWROOM' => [
+        'VIAC' => [
             '192.168.40.0/24',
             '::1' // localhost IPv6
         ]

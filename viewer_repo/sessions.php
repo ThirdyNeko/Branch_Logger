@@ -87,8 +87,8 @@ function loadSessionNamesForViewer(
     }
 
     // SQL Server pagination
-    $stmt->bindValue(':start_plus_one', $start + 1, PDO::PARAM_INT);
-    $stmt->bindValue(':end', $start + $length, PDO::PARAM_INT);
+    $stmt->bindValue(':start_plus_one', (int)$start + 1, PDO::PARAM_INT);
+    $stmt->bindValue(':end', (int)$start + (int)$length, PDO::PARAM_INT);
 
     $stmt->execute();
     $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);

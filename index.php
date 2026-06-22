@@ -171,14 +171,19 @@ $programs = loadPrograms($db);
                         const table = new DataTable('#logs', {
                             processing: true,
                             serverSide: true,
-                            ajax: { 
+                            ajax: {
                                 url: 'viewer_repo/session_server.php',
                                 type: 'POST',
-                                data: function(d) {
+                                data: function (d) {
                                     d.user = document.querySelector('[name="user"]').value;
                                     d.branch = document.querySelector('[name="branch"]').value;
                                     d.user_id = document.querySelector('[name="user_id"]').value;
                                     d.client_ip = document.querySelector('[name="client_ip"]').value;
+
+                                    d.from_date = document.querySelector('[name="from_date"]').value;
+                                    d.from_time = document.querySelector('[name="from_time"]').value;
+                                    d.to_date   = document.querySelector('[name="to_date"]').value;
+                                    d.to_time   = document.querySelector('[name="to_time"]').value;
                                 }
                             },
                             pageLength: 25,

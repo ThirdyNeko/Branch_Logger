@@ -198,6 +198,7 @@ $programs = loadPrograms($db);
                                 <th>Branch</th>
                                 <th>User ID</th>
                                 <th>Client IP</th>
+                                <th>Errors</th>
                                 <th>Last Updated</th>
                                 <th></th>
                             </tr>

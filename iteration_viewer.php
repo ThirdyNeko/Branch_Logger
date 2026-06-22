@@ -45,36 +45,34 @@ $fromDateTime = $fromDate ? $fromDate . ' ' . ($fromTime ?: '00:00:00') : null;
 $toDateTime   = $toDate   ? $toDate   . ' ' . ($toTime   ?: '23:59:59') : null;
 
 /* ==========================
-   HANDLE REMARK RESOLUTION
+   HANDLE REMARK STATUS CHANGE
 ========================== */
 
-if (isset($_POST['mark_resolved'])) {
+if (isset($_POST['remark_status'])) {
     $program        = $_POST['program'];
     $session        = $_POST['session'];
     $iteration      = (int)$_POST['iteration'];
+    $newStatus      = (int)$_POST['remark_status']; // 1 = resolved, 0 = pending
     $resolveComment = $_POST['resolve_comment'] ?? '';
-    $resolvedBy     = $_SESSION['user']['username'] ?? 'Unknown';
-    $resolvedAt     = date('Y-m-d H:i:s');
+    $changedBy      = $_SESSION['user']['username'] ?? 'Unknown';
+    $changedAt      = date('Y-m-d H:i:s');
 
-    $stmt = $db->prepare("
-        UPDATE qa_remarks
-        SET 
-            resolved = 1,
-            resolved_by = :resolved_by,
-            resolved_at = :resolved_at,
-            resolve_comment = :resolve_comment
-        WHERE program_name = :program
-          AND session_id = :session
-          AND iteration = :iteration
-    ");
-    $stmt->execute([
-        ':resolved_by'    => $resolvedBy,
-        ':resolved_at'    => $resolvedAt,
-        ':resolve_comment'=> $resolveComment,
-        ':program'        => $program,
-        ':session'        => $session,
-        ':iteration'      => $iteration
-    ]);
+    if ($newStatus === 1) {
+        $stmt = $db->prepare("
+            UPDATE qa_remarks
+            SET resolved = 1, resolved_by = :by, resolved_at = :at, resolve_comment = :comment
+            WHERE program_name = :program AND session_id = :session AND iteration = :iteration
+        ");
+        $stmt->execute([':by' => $changedBy, ':at' => $changedAt, ':comment' => $resolveComment,
+                        ':program' => $program, ':session' => $session, ':iteration' => $iteration]);
+    } else {
+        $stmt = $db->prepare("
+            UPDATE qa_remarks
+            SET resolved = 0, resolved_by = NULL, resolved_at = NULL, resolve_comment = NULL
+            WHERE program_name = :program AND session_id = :session AND iteration = :iteration
+        ");
+        $stmt->execute([':program' => $program, ':session' => $session, ':iteration' => $iteration]);
+    }
 
     header("Location: " . $_SERVER['REQUEST_URI']);
     exit;
@@ -399,36 +397,45 @@ $indexFilterQuery = http_build_query([
         $isResolved = $remarkData['resolved'] ?? false;
         ?>
 
-        <?php if ($hasRemark && !$isResolved): ?>
-            <button type="button"
-                    class="btn btn-success mb-2 w-100 py-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#resolveModal">
-                ✅ Mark Remark as Resolved
-            </button>
+        <?php if ($hasRemark): ?>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="fw-semibold text-muted small">Remark Status:</span>
+                <div class="dropdown">
+                    <button class="btn btn-sm dropdown-toggle <?= $isResolved ? 'btn-success' : 'btn-warning text-dark' ?>"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <?= $isResolved ? '✅ Resolved' : '🕐 Pending' ?>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button class="dropdown-item <?= !$isResolved ? 'active' : '' ?>"
+                                    data-action="pending" type="button">
+                                🕐 Pending
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item <?= $isResolved ? 'active' : '' ?>"
+                                    data-action="resolved" type="button">
+                                ✅ Resolved
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
-        <?php elseif ($hasRemark && $isResolved): ?>
-            <div class="card p-3 mb-2 text-start">
-                <span class="badge bg-success w-100 py-2 mb-2 text-center">
-                    ✅ Remark Resolved
-                </span>
-
-                <?php if (!empty($remarkData['resolve_comment'])): ?>
-                    <div class="mb-2">
-                        <strong>Comment:</strong>
-                        <div class="text-muted">
-                            <?= nl2br(htmlspecialchars($remarkData['resolve_comment'])) ?>
-                        </div>
-                    </div>
+                <?php if ($isResolved): ?>
+                    <small class="text-muted">
+                        by <strong><?= htmlspecialchars($remarkData['resolved_by'] ?? '-') ?></strong>
+                        at <?= !empty($remarkData['resolved_at']) ? date('Y-m-d H:i:s', strtotime($remarkData['resolved_at'])) : '-' ?>
+                    </small>
                 <?php endif; ?>
-
-                <small class="d-block text-muted">
-                    By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '-') ?> <br>
-                    At: <?= !empty($remarkData['resolved_at'])
-                        ? date('Y-m-d H:i:s', strtotime($remarkData['resolved_at']))
-                        : '-' ?>
-                </small>
             </div>
+
+            <?php if ($isResolved && !empty($remarkData['resolve_comment'])): ?>
+                <div class="alert alert-success py-2 mb-2">
+                    <strong>Resolution Comment:</strong>
+                    <div class="text-muted"><?= nl2br(htmlspecialchars($remarkData['resolve_comment'])) ?></div>
+                </div>
+            <?php endif; ?>
+
         <?php endif; ?>
 
         <!-- Logs -->
@@ -540,49 +547,78 @@ function printLogs() {
 }
 </script>
 
-<!-- Resolve Remark Modal -->
-<div class="modal fade" id="resolveModal" tabindex="-1" aria-labelledby="resolveModalLabel" aria-hidden="true">
+<!-- Remark Status Modal -->
+<div class="modal fade" id="remarkStatusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="resolveModalLabel">
-                    Confirm Resolve Remark
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header" id="remarkStatusModalHeader">
+                <h5 class="modal-title" id="remarkStatusModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
             <form method="POST">
                 <div class="modal-body">
+                    <input type="hidden" name="program"       value="<?= htmlspecialchars($selectedProgram) ?>">
+                    <input type="hidden" name="session"       value="<?= htmlspecialchars($selectedSession) ?>">
+                    <input type="hidden" name="iteration"     value="<?= htmlspecialchars($selectedIteration) ?>">
+                    <input type="hidden" name="remark_status" id="remarkStatusInput" value="">
 
-                    <input type="hidden" name="program"   value="<?= htmlspecialchars($selectedProgram) ?>">
-                    <input type="hidden" name="session"   value="<?= htmlspecialchars($selectedSession) ?>">
-                    <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
-                    <input type="hidden" name="mark_resolved" value="1">
+                    <div id="resolveCommentWrap">
+                        <label class="form-label fw-bold">Resolution Comment</label>
+                        <textarea name="resolve_comment" class="form-control"
+                                  placeholder="Add a comment for resolving..." rows="4"></textarea>
+                    </div>
 
-                    <label class="form-label fw-bold">Resolution Comment</label>
-                    <textarea
-                        name="resolve_comment"
-                        class="form-control"
-                        placeholder="Add a detailed comment for resolving..."
-                        rows="4"
-                        required></textarea>
-
+                    <div id="pendingConfirmText" class="d-none text-muted">
+                        This will revert the remark back to <strong>Pending</strong> and clear any resolution info. Continue?
+                    </div>
                 </div>
-
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-success">
-                        ✅ Confirm Resolve
-                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn" id="remarkStatusSubmitBtn">Confirm</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
+
+<script>
+// Remark status dropdown
+document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const action   = btn.dataset.action;
+        const modal    = new bootstrap.Modal(document.getElementById('remarkStatusModal'));
+        const header   = document.getElementById('remarkStatusModalHeader');
+        const input    = document.getElementById('remarkStatusInput');
+        const label    = document.getElementById('remarkStatusModalLabel');
+        const submit   = document.getElementById('remarkStatusSubmitBtn');
+        const wrap     = document.getElementById('resolveCommentWrap');
+        const confirm  = document.getElementById('pendingConfirmText');
+        const textarea = wrap.querySelector('textarea');
+
+        if (action === 'resolved') {
+            input.value    = '1';
+            label.textContent = 'Mark as Resolved';
+            header.className  = 'modal-header bg-success text-white';
+            submit.className  = 'btn btn-success';
+            submit.textContent = '✅ Confirm Resolve';
+            wrap.classList.remove('d-none');
+            confirm.classList.add('d-none');
+            textarea.required = true;
+        } else {
+            input.value    = '0';
+            label.textContent = 'Revert to Pending';
+            header.className  = 'modal-header bg-warning';
+            submit.className  = 'btn btn-warning text-dark';
+            submit.textContent = '🕐 Confirm Pending';
+            wrap.classList.add('d-none');
+            confirm.classList.remove('d-none');
+            textarea.required = false;
+        }
+
+        modal.show();
+    });
+});
+</script>
 
 </body>
 </html>

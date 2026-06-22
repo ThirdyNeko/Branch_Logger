@@ -165,11 +165,13 @@ function loadLogsForViewer(
     PDO $db,
     string $program,
     string $session,
-    $iteration,                 // int|string ('summary')
+    $iteration,
     ?string $branchId,
     ?string $userId,
     ?string $clientIP,
-    array $filteredRemarked
+    array $filteredRemarked,
+    ?string $fromDateTime = null,   // ← add
+    ?string $toDateTime   = null    // ← add
 ): array {
     if (!$program || !$session) {
         return [];
@@ -195,17 +197,14 @@ function loadLogsForViewer(
               AND session_id   = :session
               AND iteration    = :iteration
         ";
-
         $params[':iteration'] = (int) $iteration;
     }
 
-    // Optional branch filter
     if (!empty($branchId)) {
         $sql .= " AND branch_id = :branch_id";
         $params[':branch_id'] = $branchId;
     }
 
-    // ✅ Optional user filter
     if (!empty($userId)) {
         $sql .= " AND user_id = :user_id";
         $params[':user_id'] = $userId;
@@ -216,6 +215,16 @@ function loadLogsForViewer(
         $params[':client_ip'] = $clientIP;
     }
 
+    // ← add
+    if ($fromDateTime) {
+        $sql .= " AND created_at >= :from_dt";
+        $params[':from_dt'] = $fromDateTime;
+    }
+    if ($toDateTime) {
+        $sql .= " AND created_at <= :to_dt";
+        $params[':to_dt'] = $toDateTime;
+    }
+
     $sql .= $iteration === 'summary'
         ? " ORDER BY iteration ASC, created_at ASC"
         : " ORDER BY created_at ASC";
@@ -224,11 +233,9 @@ function loadLogsForViewer(
     $stmt->execute($params);
     $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Inject remark info
     foreach ($logs as &$log) {
-        $iter = (int) $log['iteration'];
+        $iter        = (int) $log['iteration'];
         $remarkEntry = $filteredRemarked[$session][$iter] ?? null;
-
         if ($remarkEntry) {
             $log['_remark_name'] = $remarkEntry['name'];
             $log['_remark_text'] = $remarkEntry['remark'];

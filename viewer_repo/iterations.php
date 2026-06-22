@@ -52,10 +52,13 @@ function getAllIterations(
         $params[':client_ip'] = $clientIP;
     }
 
-    if ($fromDateTime && $toDateTime) {
-        $sql .= " AND created_at BETWEEN :from_dt AND :to_dt";
+    if ($fromDateTime) {
+        $sql .= " AND created_at >= :from_dt";
         $params[':from_dt'] = $fromDateTime;
-        $params[':to_dt']   = $toDateTime;
+    }
+    if ($toDateTime) {
+        $sql .= " AND created_at <= :to_dt";
+        $params[':to_dt'] = $toDateTime;
     }
 
     $sql .= " ORDER BY iteration ASC";
@@ -78,6 +81,8 @@ function getErrorIterations(
     PDO $db,
     string $program,
     string $session,
+    ?string $fromDateTime = null,
+    ?string $toDateTime = null,
     ?string $branchID = null,
     ?string $userId = null,
     ?string $clientIP = null
@@ -108,6 +113,15 @@ function getErrorIterations(
     if ($clientIP) {
         $sql .= " AND client_ip = :client_ip";
         $params[':client_ip'] = $clientIP;
+    }
+
+    if ($fromDateTime) {
+        $sql .= " AND created_at >= :from_dt";
+        $params[':from_dt'] = $fromDateTime;
+    }
+    if ($toDateTime) {
+        $sql .= " AND created_at <= :to_dt";
+        $params[':to_dt'] = $toDateTime;
     }
 
     $stmt = $db->prepare($sql);

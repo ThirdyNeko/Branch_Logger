@@ -204,8 +204,19 @@ $programs = loadPrograms($db);
                                 // Row click
                                 row.classList.add('clickable-row');
                                 row.onclick = function(e) {
-                                    if (!e.target.closest('.print-session')) { // ignore clicks on print icon
-                                        window.location.href = `iteration_viewer.php?user=${encodeURIComponent(program)}&session=${encodeURIComponent(session)}`;
+                                    if (!e.target.closest('.print-session')) {
+                                        const params = new URLSearchParams({
+                                            user:       program,
+                                            session:    session,
+                                            from_date:  document.querySelector('[name="from_date"]').value,
+                                            from_time:  document.querySelector('[name="from_time"]').value,
+                                            to_date:    document.querySelector('[name="to_date"]').value,
+                                            to_time:    document.querySelector('[name="to_time"]').value,
+                                            branch:     document.querySelector('[name="branch"]').value,
+                                            user_id:    document.querySelector('[name="user_id"]').value,
+                                            client_ip:  document.querySelector('[name="client_ip"]').value,
+                                        });
+                                        window.location.href = `iteration_viewer.php?${params.toString()}`;
                                     }
                                 };
 

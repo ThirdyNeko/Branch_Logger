@@ -33,6 +33,16 @@ $db = qa_db();
 $selectedProgram   = $_GET['user'] ?? '';
 $selectedSession   = $_GET['session'] ?? '';
 $selectedIteration = $_GET['iteration'] ?? '';
+$fromDate          = $_GET['from_date'] ?? '';
+$toDate            = $_GET['to_date'] ?? '';
+$fromTime          = $_GET['from_time'] ?? '';
+$toTime            = $_GET['to_time'] ?? '';
+$branchID          = $_GET['branch'] ?? '';
+$userId            = $_GET['user_id'] ?? '';
+$clientIP          = $_GET['client_ip'] ?? '';
+
+$fromDateTime = $fromDate ? $fromDate . ' ' . ($fromTime ?: '00:00:00') : null;
+$toDateTime   = $toDate   ? $toDate   . ' ' . ($toTime   ?: '23:59:59') : null;
 
 /* ==========================
    HANDLE REMARK RESOLUTION
@@ -46,7 +56,6 @@ if (isset($_POST['mark_resolved'])) {
     $resolvedBy     = $_SESSION['user']['username'] ?? 'Unknown';
     $resolvedAt     = date('Y-m-d H:i:s');
 
-    // Update the resolved fields
     $stmt = $db->prepare("
         UPDATE qa_remarks
         SET 
@@ -67,18 +76,8 @@ if (isset($_POST['mark_resolved'])) {
         ':iteration'      => $iteration
     ]);
 
-    // Reload page to reflect change
     header("Location: " . $_SERVER['REQUEST_URI']);
     exit;
-}
-
-
-/* ==========================
-   LOAD ITERATIONS
-========================== */
-$iterations = [];
-if ($selectedProgram && $selectedSession) {
-    $iterations = getAllIterations($db, $selectedProgram, $selectedSession);
 }
 
 /* ==========================
@@ -91,10 +90,12 @@ if ($selectedProgram && $selectedSession && $selectedIteration) {
         $selectedProgram,
         $selectedSession,
         $selectedIteration,
-        null,       // branch
-        null,       // userId
-        null,       // clientIP
-        []          // filteredRemarked MUST be an array
+        $branchID,
+        $userId,
+        $clientIP,
+        [],
+        $fromDateTime,   // ← add
+        $toDateTime      // ← add
     );
 }
 
@@ -116,30 +117,23 @@ function group_error_logs(array $errorLogs): array
     $grouped = [];
 
     foreach ($errorLogs as $log) {
-        // Decode response_body safely
         $decoded = json_decode($log['response_body'] ?? '', true);
 
         $message  = $decoded['message'] ?? '';
         $severity = $decoded['severity'] ?? '';
 
-        // 🔑 Logical grouping key
         $key = md5(
             ($log['type'] ?? '') . '|' . $message . '|' . $severity
         );
 
         if (!isset($grouped[$key])) {
             $base = $log;
-
-            // Remove per-occurrence fields
             unset($base['endpoint']);
-
             $base['_count'] = 0;
             $base['_endpoints'] = [];
-
             $grouped[$key] = $base;
         }
 
-        // Collect endpoints
         if (!empty($log['endpoint'])) {
             $grouped[$key]['_endpoints'][$log['endpoint']] = true;
         }
@@ -147,7 +141,6 @@ function group_error_logs(array $errorLogs): array
         $grouped[$key]['_count']++;
     }
 
-    // Normalize endpoint list
     foreach ($grouped as &$group) {
         $group['_endpoints'] = array_keys($group['_endpoints']);
     }
@@ -155,17 +148,14 @@ function group_error_logs(array $errorLogs): array
     return array_values($grouped);
 }
 
-
 function render_log_entry(array $log): string
 {
     $type = $log['type'] ?? '';
 
-    // Normalize endpoints
     $endpoints = !empty($log['_endpoints']) && is_array($log['_endpoints'])
         ? $log['_endpoints']
         : (!empty($log['endpoint']) ? [$log['endpoint']] : []);
 
-    // Determine card style
     $cardClass = 'bg-light border';
     if ($type === 'backend-error') {
         $cardClass = 'bg-danger-subtle border-danger';
@@ -174,14 +164,12 @@ function render_log_entry(array $log): string
     $html = '<div class="card mb-3 ' . $cardClass . '">';
     $html .= '<div class="card-body p-3">';
 
-    // Card title
     $html .= '<h6 class="card-title mb-2">' . 
              ($type === 'backend-error' 
                  ? '<span class="text-danger">Backend Error</span>' 
                  : htmlspecialchars($type)) . 
              '</h6>';
 
-    // Endpoints
     if (!empty($endpoints)) {
         $html .= '<p class="mb-2"><strong>Endpoints:</strong><br>';
         foreach ($endpoints as $ep) {
@@ -193,7 +181,6 @@ function render_log_entry(array $log): string
         $html .= '</p>';
     }
 
-    // Request body
     if (!empty($log['request_body'])) {
         $json = json_decode($log['request_body'], true);
         $pretty = $json !== null
@@ -203,7 +190,6 @@ function render_log_entry(array $log): string
                  . htmlspecialchars($pretty) . '</pre></p>';
     }
 
-    // Response body
     if (!empty($log['response_body'])) {
         $json = json_decode($log['response_body'], true);
         $pretty = $json !== null
@@ -213,14 +199,12 @@ function render_log_entry(array $log): string
                  . htmlspecialchars($pretty) . '</pre></p>';
     }
 
-    // Iteration / Method / Status
     if (!in_array($type, ['frontend-io', 'backend-response'], true)) {
-        if (!empty($log['iteration'])) $html .= '<p class="mb-1"><strong>Iteration:</strong> ' . htmlspecialchars($log['iteration']) . '</p>';
-        if (!empty($log['method'])) $html .= '<p class="mb-1"><strong>Method:</strong> ' . htmlspecialchars($log['method']) . '</p>';
+        if (!empty($log['iteration']))  $html .= '<p class="mb-1"><strong>Iteration:</strong> ' . htmlspecialchars($log['iteration']) . '</p>';
+        if (!empty($log['method']))     $html .= '<p class="mb-1"><strong>Method:</strong> ' . htmlspecialchars($log['method']) . '</p>';
         if (isset($log['status_code'])) $html .= '<p class="mb-1"><strong>Status:</strong> ' . (int)$log['status_code'] . '</p>';
     }
 
-    // Occurrences
     if ($type === 'backend-error' && !empty($log['_count']) && $log['_count'] > 1) {
         $extra = (int)$log['_count'] - 1;
         $html .= '<div class="alert alert-warning p-2 mt-2 mb-2" role="alert">
@@ -229,13 +213,9 @@ function render_log_entry(array $log): string
                 </div>';
     }
 
-    // Created At
     if (!empty($log['created_at'])) {
         $html .= '<p class="text-muted small mb-0">Created at: ' . 
-            (!empty($log['created_at']) 
-                ? date('Y-m-d H:i:s', strtotime($log['created_at'])) 
-                : '-') 
-            . '</p>';
+            date('Y-m-d H:i:s', strtotime($log['created_at'])) . '</p>';
     }
 
     $html .= '</div></div>';
@@ -256,54 +236,62 @@ if ($selectedProgram && $selectedSession) {
     );
 }
 
-
-
-
-/* ==========================
-   ITERATION LIST FOR SELECTED SESSION
-========================== */
-$iterations = [];
-if ($selectedSession && isset($filteredRemarked[$selectedSession])) {
-    // Include iterations with remarks
-    $iterations = array_keys($filteredRemarked[$selectedSession]);
-}
-
 /* ==========================
    ITERATIONS WITH ERRORS
 ========================== */
-$iterations = [];
+$iterations      = [];
+$errorIterations = [];
 
 if ($selectedProgram && $selectedSession) {
     $iterations = getAllIterations(
-        $db,
-        $selectedProgram,
-        $selectedSession,
-        null,
-        null,
-        null,       // branch
-        null,       // userId
-        null,       // clientIP
+        $db, $selectedProgram, $selectedSession,
+        $fromDateTime, $toDateTime,
+        $branchID, $userId, $clientIP
     );
 
     $errorIterations = getErrorIterations(
-        $db,
-        $selectedProgram,
-        $selectedSession,
-        null,       // branch
-        null,       // userId
-        null,       // clientIP
+        $db, $selectedProgram, $selectedSession,
+        $fromDateTime, $toDateTime,
+        $branchID, $userId, $clientIP
     );
 
-    // Ensure error iterations always appear
-    foreach ($errorIterations as $iter => $_) {
-        if (!in_array($iter, $iterations, true)) {
-            $iterations[] = $iter;
-        }
-    }
+    // foreach ($errorIterations as $iter => $_) {
+    //     if (!in_array($iter, $iterations, true)) {
+    //         $iterations[] = $iter;
+    //     }
+    // }
 
     sort($iterations);
 }
 
+/* ==========================
+   FILTER QUERY STRINGS
+========================== */
+
+// Used for dropdown links (includes session)
+$filterQuery = http_build_query([
+    'user'      => $selectedProgram,
+    'session'   => $selectedSession,
+    'from_date' => $fromDate,
+    'from_time' => $fromTime,
+    'to_date'   => $toDate,
+    'to_time'   => $toTime,
+    'branch'    => $branchID,
+    'user_id'   => $userId,
+    'client_ip' => $clientIP,
+]);
+
+// Used for Back to Sessions (no session param)
+$indexFilterQuery = http_build_query([
+    'user'      => $selectedProgram,
+    'from_date' => $fromDate,
+    'from_time' => $fromTime,
+    'to_date'   => $toDate,
+    'to_time'   => $toTime,
+    'branch'    => $branchID,
+    'user_id'   => $userId,
+    'client_ip' => $clientIP,
+]);
 
 ?>
 <!doctype html>
@@ -321,27 +309,10 @@ if ($selectedProgram && $selectedSession) {
         .clickable-row { cursor: pointer; }
 
         @media print {
-
-            /* Hide sidebar */
-            .sidebar {
-                display: none !important;
-            }
-
-            /* Remove padding */
-            main {
-                padding: 0 !important;
-            }
-
-            /* Show print header */
-            .print-header {
-                display: block !important;
-            }
-
-            /* Improve spacing */
-            body {
-                background: white;
-            }
-
+            .sidebar { display: none !important; }
+            main { padding: 0 !important; }
+            .print-header { display: block !important; }
+            body { background: white; }
         }
     </style>
 </head>
@@ -359,7 +330,7 @@ if ($selectedProgram && $selectedSession) {
 
         <!-- Top buttons -->
         <div class="d-grid gap-2">
-            <a href="index.php" class="btn btn-primary btn-sm">Back to Sessions</a>
+            <a href="index.php?<?= $indexFilterQuery ?>" class="btn btn-primary btn-sm">Back to Sessions</a>
             <button onclick="printLogs()" class="btn btn-outline-dark btn-sm">
                 Print Activity Log
             </button>
@@ -381,41 +352,44 @@ if ($selectedProgram && $selectedSession) {
         <!-- Iteration Dropdown -->
         <div class="mb-3 d-flex align-items-center gap-2">
             <form method="GET" class="d-flex align-items-center gap-2 m-0">
-                <input type="hidden" name="user" value="<?= htmlspecialchars($selectedProgram) ?>">
+                <input type="hidden" name="user"    value="<?= htmlspecialchars($selectedProgram) ?>">
                 <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
 
                 <label class="form-label"><strong>Activity Log:</strong></label>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-dark dropdown-toggle w-100" type="button" id="iterationDropdown" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static">
-                            <?= $selectedIteration ? htmlspecialchars($selectedIteration) : '-- Select Activity Log --' ?>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-scroll w-100 text-wrap" aria-labelledby="iterationDropdown">
-                            <!-- Session Summary Option -->
-                            <li>
-                                <a class="dropdown-item"
-                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=summary&from_date=<?= urlencode($fromDate ?? '') ?>">
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark dropdown-toggle w-100" type="button"
+                            id="iterationDropdown" data-bs-toggle="dropdown"
+                            aria-expanded="false" data-bs-display="static">
+                        <?= $selectedIteration ? htmlspecialchars($selectedIteration) : '-- Select Activity Log --' ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-scroll w-100 text-wrap" aria-labelledby="iterationDropdown">
 
-                                    Session Summary
-                                </a>
-                            </li>
-                            
-                            <?php foreach ($iterations as $iter):
-                                $remarkName = $filteredRemarked[$selectedSession][$iter]['name'] ?? '';
-                                $hasError   = isset($errorIterations[$iter]);
+                        <!-- Session Summary -->
+                        <li>
+                            <a class="dropdown-item"
+                               href="?<?= $filterQuery ?>&iteration=summary">
+                                Session Summary
+                            </a>
+                        </li>
 
-                                $label = $iter;
-                                if ($remarkName) $label .= ' - ' . $remarkName;
-                                if ($hasError)   $label .= ' ⚠';
-                            ?>
-                            <li>
-                                <a class="dropdown-item text-wrap <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
-                                    href="?user=<?= urlencode($selectedProgram) ?>&session=<?= urlencode($selectedSession) ?>&iteration=<?= urlencode($iter) ?>">
-                                    <?= htmlspecialchars($label) ?>
-                                </a>
-                            </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
+                        <?php foreach ($iterations as $iter):
+                            $remarkName = $filteredRemarked[$selectedSession][$iter]['name'] ?? '';
+                            $hasError   = isset($errorIterations[$iter]);
+
+                            $label = $iter;
+                            if ($remarkName) $label .= ' - ' . $remarkName;
+                            if ($hasError)   $label .= ' ⚠';
+                        ?>
+                        <li>
+                            <a class="dropdown-item text-wrap <?= $hasError ? 'text-danger fw-semibold' : '' ?>"
+                               href="?<?= $filterQuery ?>&iteration=<?= urlencode($iter) ?>">
+                                <?= htmlspecialchars($label) ?>
+                            </a>
+                        </li>
+                        <?php endforeach; ?>
+
+                    </ul>
+                </div>
             </form>
         </div>
 
@@ -426,16 +400,14 @@ if ($selectedProgram && $selectedSession) {
         ?>
 
         <?php if ($hasRemark && !$isResolved): ?>
-            <!-- Form to mark remark as resolved -->
-            <button type="button" 
+            <button type="button"
                     class="btn btn-success mb-2 w-100 py-2"
-                    data-bs-toggle="modal" 
+                    data-bs-toggle="modal"
                     data-bs-target="#resolveModal">
                 ✅ Mark Remark as Resolved
             </button>
 
         <?php elseif ($hasRemark && $isResolved): ?>
-            <!-- Display resolved info -->
             <div class="card p-3 mb-2 text-start">
                 <span class="badge bg-success w-100 py-2 mb-2 text-center">
                     ✅ Remark Resolved
@@ -452,8 +424,8 @@ if ($selectedProgram && $selectedSession) {
 
                 <small class="d-block text-muted">
                     By: <?= htmlspecialchars($remarkData['resolved_by'] ?? '-') ?> <br>
-                    At: <?= !empty($remarkData['resolved_at']) 
-                        ? date('Y-m-d H:i:s', strtotime($remarkData['resolved_at'])) 
+                    At: <?= !empty($remarkData['resolved_at'])
+                        ? date('Y-m-d H:i:s', strtotime($remarkData['resolved_at']))
                         : '-' ?>
                 </small>
             </div>
@@ -474,17 +446,16 @@ if ($selectedProgram && $selectedSession) {
                 <hr>
             </div>
 
-            <?php if (!empty($logsToShow) || !empty($filteredRemarked)) : ?>
+            <?php if (!empty($logsToShow) || !empty($filteredRemarked)): ?>
 
                 <?php
-                // Single iteration remark info
                 $remarkEntry = $filteredRemarked[$selectedSession][$selectedIteration] ?? null;
-                $remarkName = $remarkEntry['name'] ?? '';
-                $remarkText = $remarkEntry['remark'] ?? '';
-                $remarkUser = $remarkEntry['username'] ?? 'Unknown';
+                $remarkName  = $remarkEntry['name'] ?? '';
+                $remarkText  = $remarkEntry['remark'] ?? '';
+                $remarkUser  = $remarkEntry['username'] ?? 'Unknown';
                 ?>
 
-                <?php if ($remarkName || $remarkText) : ?>
+                <?php if ($remarkName || $remarkText): ?>
                     <div class="card log-card bg-primary-subtle border-primary p-3 mb-2">
                         <strong>Remark Name:</strong> <?= htmlspecialchars($remarkName) ?><br>
                         <small>By: <?= htmlspecialchars($remarkUser) ?></small>
@@ -495,40 +466,37 @@ if ($selectedProgram && $selectedSession) {
                     </div>
                 <?php endif; ?>
 
-
-                <?php
-                if ($selectedIteration === 'summary') :
+                <?php if ($selectedIteration === 'summary'):
 
                     $logsByIteration = [];
 
                     foreach ($logsToShow as $log) {
                         $iter = $log['iteration'] ?? 0;
                         if (!is_error_log($log)) continue;
-
                         if (!isset($logsByIteration[$iter])) $logsByIteration[$iter] = [];
                         $logsByIteration[$iter][] = $log;
                     }
 
-                    // Include remark-only iterations
+                    $allowedIterations = array_flip($iterations); // fast lookup
                     foreach ($filteredRemarked[$selectedSession] ?? [] as $iter => $remark) {
-                        if (!isset($logsByIteration[$iter])) {
+                        if (isset($allowedIterations[$iter]) && !isset($logsByIteration[$iter])) {
                             $logsByIteration[$iter] = [];
                         }
                     }
 
-                    foreach ($logsByIteration as $iter => $logs) :
+                    foreach ($logsByIteration as $iter => $logs):
 
                         echo '<h5 class="mt-3">Activity Log ' . htmlspecialchars($iter) . '</h5>';
 
                         $remarkEntry = $filteredRemarked[$selectedSession][$iter] ?? null;
 
-                        if ($remarkEntry) :
+                        if ($remarkEntry):
                             echo '<div class="card bg-primary-subtle border-primary p-3 mb-2">';
                             echo '<strong>Remark Name:</strong> ' . htmlspecialchars($remarkEntry['name']) . '<br>';
                             echo '<small>By: ' . htmlspecialchars($remarkEntry['username'] ?? 'Unknown') . '</small>';
                             echo '</div>';
 
-                            if (!empty($remarkEntry['remark'])) :
+                            if (!empty($remarkEntry['remark'])):
                                 echo '<div class="card bg-light p-3 mb-2">';
                                 echo '<strong>Remark:</strong><br>' . nl2br(htmlspecialchars($remarkEntry['remark']));
                                 echo '</div>';
@@ -542,7 +510,7 @@ if ($selectedProgram && $selectedSession) {
 
                     endforeach;
 
-                else :  // SINGLE ITERATION
+                else: // SINGLE ITERATION
 
                     $logsToRender = group_error_logs($logsToShow);
                     foreach ($logsToRender as $log) {
@@ -550,7 +518,7 @@ if ($selectedProgram && $selectedSession) {
                     }
 
                 endif; ?>
-                
+
             <?php endif; ?>
 
         </div>
@@ -587,15 +555,15 @@ function printLogs() {
             <form method="POST">
                 <div class="modal-body">
 
-                    <input type="hidden" name="program" value="<?= htmlspecialchars($selectedProgram) ?>">
-                    <input type="hidden" name="session" value="<?= htmlspecialchars($selectedSession) ?>">
+                    <input type="hidden" name="program"   value="<?= htmlspecialchars($selectedProgram) ?>">
+                    <input type="hidden" name="session"   value="<?= htmlspecialchars($selectedSession) ?>">
                     <input type="hidden" name="iteration" value="<?= htmlspecialchars($selectedIteration) ?>">
                     <input type="hidden" name="mark_resolved" value="1">
 
                     <label class="form-label fw-bold">Resolution Comment</label>
-                    <textarea 
-                        name="resolve_comment" 
-                        class="form-control" 
+                    <textarea
+                        name="resolve_comment"
+                        class="form-control"
                         placeholder="Add a detailed comment for resolving..."
                         rows="4"
                         required></textarea>

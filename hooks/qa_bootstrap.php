@@ -288,7 +288,7 @@ set_error_handler(function ($severity, $message, $file, $line) {
 /* --------------------------------------------------
    SHUTDOWN SAFETY (last chance, once only)
 -------------------------------------------------- */
-register_shutdown_function(function () {
+register_shutdown_function(function () use ($real_client_ip) {
 
     static $handled = false;
     if ($handled) return;

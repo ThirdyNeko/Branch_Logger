@@ -34,7 +34,9 @@ if (!$data || empty($data['timestamp'])) {
 }
 
 $client_ip = $data['client_ip'] ?? qa_get_client_ip();
-$device_name  = gethostbyaddr($client_ip) ?: $client_ip;
+$device_name = filter_var($client_ip, FILTER_VALIDATE_IP)
+    ? (gethostbyaddr($client_ip) ?: $client_ip)
+    : $client_ip;
 $user_id = $device_name;
 
 $GLOBALS['__QA_USER_ID__']  = $user_id;
